@@ -19,6 +19,7 @@ export default async function Admin() {
     <main style={{ padding: "6vh 8vw" }}>
       <h1>Admin <span style={{ color: "#E50914" }}>Dashboard</span></h1>
       <p style={{ color: "#A1A1A1" }}>Signed in as {me.name} ({me.role})</p>
+      <p><a href="/admin/manage" className="btn">Manage</a> <a href="/admin/analytics" className="btn">Analytics</a> <a href="/admin/moderation" className="btn">Moderation</a> <a href="/admin/scan" className="btn">Scanner</a></p>
       <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))" }}>
         {stats.map(([k, v]) => <div key={k} style={card}><small style={{ color: "#A1A1A1" }}>{k}</small><h2 style={{ margin: "8px 0 0" }}>{v}</h2></div>)}
       </div>

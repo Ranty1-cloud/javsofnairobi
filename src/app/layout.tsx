@@ -8,7 +8,7 @@ const css = `body{margin:0;background:#050505;color:#fff;font-family:Inter,syste
 input,textarea,select{background:#111;color:#fff;border:1px solid #292929;border-radius:8px;padding:12px;width:100%;box-sizing:border-box;margin:6px 0}
 nav{display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding:16px 8vw;border-bottom:1px solid #292929}nav b{letter-spacing:2px;margin-right:auto}`;
 export default function Root({ children }: { children: React.ReactNode }) {
-  const links: [string, string][] = [["Trips", "/trips"], ["Destinations", "/destinations"], ["Nganya Culture", "/nganya"], ["News", "/news"], ["Gallery", "/gallery"], ["Account", "/account"]];
+  const links: [string, string][] = [["Trips", "/trips"], ["Destinations", "/destinations"], ["Nganya Culture", "/nganya"], ["News", "/news"], ["Gallery", "/gallery"], ["Support", "/support"], ["Account", "/account"]];
   return (
     <html lang="en"><body><style>{css}</style>
       <nav><b><Link href="/">JAVS <span style={{ color: "#E50914" }}>OF NAIROBI</span></Link></b>{links.map(([n, h]) => <Link key={h} href={h}>{n}</Link>)}<Link className="btn" href="/trips">Book a Seat</Link></nav>

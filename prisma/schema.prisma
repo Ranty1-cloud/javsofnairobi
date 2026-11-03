@@ -84,6 +84,9 @@ model Booking {
   notifications Notification[]
   phone String?
   whatsappOptIn Boolean @default(false)
+  promoCode String?
+  discountKes Int @default(0)
+  refunds Refund[]
   createdAt DateTime @default(now())
 }
 model Payment {
@@ -185,4 +188,31 @@ model Notification {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@unique([bookingId, channel])
+}
+
+model PromoCode {
+  id String @id @default(cuid())
+  code String @unique
+  percentOff Int
+  maxUses Int
+  used Int @default(0)
+  expiresAt DateTime?
+  active Boolean @default(true)
+}
+model Waitlist {
+  id String @id @default(cuid())
+  tripId String
+  contact String
+  notifiedAt DateTime?
+  createdAt DateTime @default(now())
+  @@unique([tripId, contact])
+}
+model Refund {
+  id String @id @default(cuid())
+  bookingId String
+  booking Booking @relation(fields: [bookingId], references: [id])
+  amountKes Int
+  reason String
+  actor String
+  createdAt DateTime @default(now())
 }
