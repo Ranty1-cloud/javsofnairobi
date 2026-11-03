@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import { limited, clientIp } from "@/lib/ratelimit";
 import { ticketByToken, renderTicketsPdf } from "@/lib/pdf";
