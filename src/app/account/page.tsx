@@ -21,7 +21,7 @@ export default async function Account() {
             <h3>{b.trip.title}</h3>
             <p className="mut">{b.trip.departsAt.toLocaleString("en-KE")} · {b.reference}</p>
             <p>KSh {b.totalKes.toLocaleString()} · {b.payments.map(p => p.status).join(", ") || "no payment"}</p>
-            <p><Link href={`/booking/${b.id}`} className="mut">Details</Link>{b.tickets.map(t => <Link key={t.id} href={`/ticket/${t.token}`} className="btn" style={{ marginLeft: 8 }}>Ticket {b.seats.find(x => x.id === t.seatId)?.label}</Link>)}</p>
+            <p><Link href={`/booking/${b.id}`} className="mut">Details</Link>{b.status === "CONFIRMED" && b.tickets.length > 0 && <a href={`/api/bookings/${b.id}/pdf`} className="mut" style={{ marginLeft: 8 }}>All tickets (PDF)</a>}{b.tickets.map(t => <Link key={t.id} href={`/ticket/${t.token}`} className="btn" style={{ marginLeft: 8 }}>Ticket {b.seats.find(x => x.id === t.seatId)?.label}</Link>)}</p>
             {b.status === "PENDING" && <CancelButton id={b.id} />}
           </div>
         ))}

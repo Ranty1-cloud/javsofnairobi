@@ -2,6 +2,7 @@ import { db } from "./db";
 import { issueTickets } from "./tickets";
 import { awardPoints } from "./loyalty";
 import { notifyBooking } from "./whatsapp";
+import { notifyEmail } from "./notify-email";
 // Single confirmation path for STK callbacks, manual verification and C2B auto-match.
 // The payment row is claimed with a conditional update inside one transaction, so duplicate or concurrent callbacks are a no-op.
 export async function confirmPayment(paymentId: string, receipt?: string) {
@@ -22,5 +23,6 @@ export async function confirmPayment(paymentId: string, receipt?: string) {
   if (typeof result === "string") return result;
   await issueTickets(result.bookingId); await awardPoints(result.bookingId);
   try { await notifyBooking(result.bookingId); } catch (e) { console.error("whatsapp", e); }
+  try { await notifyEmail(result.bookingId); } catch (e) { console.error("email", e); }
   return "confirmed" as const;
 }

@@ -24,7 +24,7 @@ export default async function TicketPage({ params }: { params: { token: string }
           <div style={{ background: "#fff", borderRadius: 12, padding: 8, width: 200, margin: "0 auto" }} dangerouslySetInnerHTML={{ __html: svg }} />
         </div>
       </div>
-      <PrintButton />
+      <div className="no-print" style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 12 }}><a className="btn" href={`/api/tickets/${t.token}/pdf`}>Download PDF</a><PrintButton /></div>
       {t.checkedInAt && <ReviewForm token={t.token} />}
     </main>
   );
