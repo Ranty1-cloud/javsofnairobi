@@ -1,0 +1,109 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+
+enum Role { SUPER_ADMIN ADMIN BOOKING_MANAGER CONTENT_EDITOR FINANCE_MANAGER SUPPORT CUSTOMER }
+enum SeatStatus { AVAILABLE RESERVED BOOKED }
+enum BookingStatus { PENDING CONFIRMED CANCELLED EXPIRED REFUNDED }
+enum PaymentStatus { INITIATED PENDING SUCCESS FAILED REVERSED REFUNDED }
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String
+  phone String?
+  passwordHash String
+  role Role @default(CUSTOMER)
+  bookings Booking[]
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+}
+model Destination {
+  id String @id @default(cuid())
+  slug String @unique
+  name String
+  description String
+  lat Float?
+  lng Float?
+  trips Trip[]
+}
+model Vehicle {
+  id String @id @default(cuid())
+  name String
+  capacity Int
+  layout Json
+  trips Trip[]
+}
+model Trip {
+  id String @id @default(cuid())
+  slug String @unique
+  title String
+  category String
+  destinationId String
+  destination Destination @relation(fields: [destinationId], references: [id])
+  vehicleId String
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  departsAt DateTime
+  meetingPoint String
+  priceKes Int
+  bookingFeeKes Int @default(0)
+  published Boolean @default(false)
+  isSample Boolean @default(true)
+  seats TripSeat[]
+  bookings Booking[]
+  @@index([departsAt])
+}
+model TripSeat {
+  id String @id @default(cuid())
+  tripId String
+  trip Trip @relation(fields: [tripId], references: [id])
+  label String
+  priceKes Int
+  status SeatStatus @default(AVAILABLE)
+  heldBy String?
+  heldUntil DateTime?
+  bookingId String?
+  booking Booking? @relation(fields: [bookingId], references: [id])
+  @@unique([tripId, label])
+  @@index([status, heldUntil])
+}
+model Booking {
+  id String @id @default(cuid())
+  reference String @unique
+  tripId String
+  trip Trip @relation(fields: [tripId], references: [id])
+  userId String?
+  user User? @relation(fields: [userId], references: [id])
+  guestEmail String?
+  status BookingStatus @default(PENDING)
+  totalKes Int
+  seats TripSeat[]
+  payments Payment[]
+  createdAt DateTime @default(now())
+}
+model Payment {
+  id String @id @default(cuid())
+  bookingId String
+  booking Booking @relation(fields: [bookingId], references: [id])
+  provider String
+  idempotencyKey String @unique
+  providerRef String? @unique
+  amountKes Int
+  status PaymentStatus @default(INITIATED)
+  rawCallback Json?
+  createdAt DateTime @default(now())
+}
+model Article {
+  id String @id @default(cuid())
+  slug String @unique
+  title String
+  category String
+  body String
+  publishedAt DateTime?
+}
+model AuditLog {
+  id String @id @default(cuid())
+  actor String?
+  action String
+  detail Json?
+  createdAt DateTime @default(now())
+}
