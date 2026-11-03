@@ -99,8 +99,11 @@ model Article {
   slug String @unique
   title String
   category String
+  excerpt String @default("")
   body String
+  coverUrl String?
   publishedAt DateTime?
+  comments Comment[]
 }
 model AuditLog {
   id String @id @default(cuid())
@@ -120,5 +123,39 @@ model Ticket {
   passengerName String
   checkedInAt DateTime?
   checkedInBy String?
+  createdAt DateTime @default(now())
+}
+
+model NganyaProfile {
+  id String @id @default(cuid())
+  name String
+  crew String?
+  bio String
+  imageUrl String?
+  createdAt DateTime @default(now())
+}
+model GalleryMedia {
+  id String @id @default(cuid())
+  url String
+  caption String @default("")
+  category String
+  createdAt DateTime @default(now())
+}
+model Submission {
+  id String @id @default(cuid())
+  kind String
+  title String
+  body String
+  contact String?
+  status String @default("PENDING")
+  createdAt DateTime @default(now())
+}
+model Comment {
+  id String @id @default(cuid())
+  articleId String
+  article Article @relation(fields: [articleId], references: [id])
+  name String
+  body String
+  approved Boolean @default(false)
   createdAt DateTime @default(now())
 }
