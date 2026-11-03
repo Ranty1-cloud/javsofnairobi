@@ -11,6 +11,11 @@ export async function POST(req: Request) {
   const items: { Name: string; Value: number }[] = cb.CallbackMetadata?.Item ?? [];
   const paid = items.find(i => i.Name === "Amount")?.Value;
   const ok = cb.ResultCode === 0 && paid === pay.amountKes;
+  const bk = await db.booking.findUnique({ where: { id: pay.bookingId } });
+  if (ok && bk?.status !== "PENDING") { // paid after the booking expired or was cancelled: record it, do not confirm, flag for refund
+    await db.$transaction([db.payment.update({ where: { id: pay.id }, data: { status: "SUCCESS", rawCallback: cb } }), db.auditLog.create({ data: { action: "payment.late_needs_refund", detail: { bookingId: pay.bookingId } } })]);
+    return ack;
+  }
   await db.$transaction([
     db.payment.update({ where: { id: pay.id }, data: { status: ok ? "SUCCESS" : "FAILED", rawCallback: cb } }),
     ...(ok ? [db.booking.update({ where: { id: pay.bookingId }, data: { status: "CONFIRMED" } }), db.tripSeat.updateMany({ where: { bookingId: pay.bookingId }, data: { status: "BOOKED", heldBy: null, heldUntil: null } })] : []),

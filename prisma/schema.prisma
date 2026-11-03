@@ -80,6 +80,7 @@ model Booking {
   seats TripSeat[]
   payments Payment[]
   tickets Ticket[]
+  passengers BookingPassenger[]
   createdAt DateTime @default(now())
 }
 model Payment {
@@ -158,4 +159,13 @@ model Comment {
   body String
   approved Boolean @default(false)
   createdAt DateTime @default(now())
+}
+
+model BookingPassenger {
+  id String @id @default(cuid())
+  bookingId String
+  booking Booking @relation(fields: [bookingId], references: [id])
+  label String
+  name String
+  @@unique([bookingId, label])
 }
