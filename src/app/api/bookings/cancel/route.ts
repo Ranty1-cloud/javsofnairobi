@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { releasePromo } from "@/lib/promo";
 export async function POST(req: Request) {
   const s = await getSession();
   if (!s) return NextResponse.json({ error: "Please log in" }, { status: 401 });
@@ -14,5 +15,6 @@ export async function POST(req: Request) {
     db.booking.update({ where: { id }, data: { status: "CANCELLED" } }),
     db.auditLog.create({ data: { actor: s.userId, action: "booking.cancel", detail: { id } } }),
   ]);
+  await releasePromo(b.promoCode);
   return NextResponse.json({ ok: true });
 }

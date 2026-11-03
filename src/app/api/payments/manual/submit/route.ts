@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { limited } from "@/lib/ratelimit";
+import { limited, clientIp } from "@/lib/ratelimit";
 const b = z.object({ id: z.string(), code: z.string().regex(/^[A-Z0-9]{10}$/, "Enter the 10-character M-Pesa code") });
 export async function POST(req: Request) {
-  if (limited("m:" + (req.headers.get("x-forwarded-for") ?? "ip"), 6)) return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
+  if (limited("m:" + clientIp(req), 6)) return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
   const p = b.safeParse(await req.json());
   if (!p.success) return NextResponse.json({ error: p.error.issues[0].message }, { status: 400 });
   const pay = await db.payment.findFirst({ where: { bookingId: p.data.id, provider: "mpesa_manual", status: "PENDING" } });

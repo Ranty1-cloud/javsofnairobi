@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { limited } from "@/lib/ratelimit";
+import { limited, clientIp } from "@/lib/ratelimit";
 const b = z.object({ token: z.string().min(10), rating: z.number().int().min(1).max(5), body: z.string().min(3).max(1000) });
 export async function POST(req: Request) {
-  if (limited("r:" + (req.headers.get("x-forwarded-for") ?? "ip"), 5)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  if (limited("r:" + clientIp(req), 5)) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   const p = b.safeParse(await req.json());
   if (!p.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   const t = await db.ticket.findUnique({ where: { token: p.data.token }, include: { booking: true } });

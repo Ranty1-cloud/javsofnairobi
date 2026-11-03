@@ -3,10 +3,10 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 const b = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("article"), slug: z.string().regex(/^[a-z0-9-]+$/), title: z.string(), category: z.string(), excerpt: z.string().default(""), body: z.string(), coverUrl: z.string().url().optional(), publishedAt: z.coerce.date().optional() }),
+  z.object({ type: z.literal("article"), slug: z.string().regex(/^[a-z0-9-]+$/), title: z.string(), category: z.string(), excerpt: z.string().default(""), body: z.string(), coverUrl: z.string().url().optional(), author: z.string().max(80).optional(), publishedAt: z.coerce.date().optional() }),
   z.object({ type: z.literal("nganya"), name: z.string(), crew: z.string().optional(), bio: z.string(), imageUrl: z.string().url().optional() }),
   z.object({ type: z.literal("gallery"), url: z.string().url(), caption: z.string().default(""), category: z.string() }),
-  z.object({ type: z.literal("destination"), slug: z.string().regex(/^[a-z0-9-]+$/), name: z.string(), description: z.string(), lat: z.number().optional(), lng: z.number().optional() }),
+  z.object({ type: z.literal("destination"), slug: z.string().regex(/^[a-z0-9-]+$/), name: z.string(), description: z.string(), lat: z.number().optional(), lng: z.number().optional(), imageUrl: z.string().url().optional(), region: z.string().optional(), travelTime: z.string().optional(), budgetNote: z.string().optional(), activities: z.string().optional(), tips: z.string().optional() }),
 ]);
 export async function POST(req: Request) {
   const u = await requireRole(["SUPER_ADMIN", "ADMIN", "CONTENT_EDITOR"]);

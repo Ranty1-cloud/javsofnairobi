@@ -25,6 +25,12 @@ model Destination {
   description String
   lat Float?
   lng Float?
+  imageUrl String?
+  region String @default("")
+  travelTime String @default("")
+  budgetNote String @default("")
+  activities String @default("")
+  tips String @default("")
   trips Trip[]
 }
 model Vehicle {
@@ -47,6 +53,10 @@ model Trip {
   meetingPoint String
   priceKes Int
   bookingFeeKes Int @default(0)
+  imageUrl String?
+  summary String @default("")
+  tripType String @default("DAY")
+  durationLabel String @default("")
   published Boolean @default(false)
   isSample Boolean @default(true)
   seats TripSeat[]
@@ -111,7 +121,9 @@ model Article {
   excerpt String @default("")
   body String
   coverUrl String?
+  author String @default("JAVS Editorial")
   publishedAt DateTime?
+  archivedAt DateTime?
   comments Comment[]
 }
 model AuditLog {
@@ -238,5 +250,11 @@ model LoyaltyEntry {
   user User @relation(fields: [userId], references: [id])
   bookingId String @unique
   points Int
+  createdAt DateTime @default(now())
+}
+
+model Subscriber {
+  id String @id @default(cuid())
+  email String @unique
   createdAt DateTime @default(now())
 }

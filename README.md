@@ -1,7 +1,26 @@
 # JAVS OF NAIROBI
-Phase 1 scaffold: schema, atomic seat holds, brand hero.
-Setup: `cp .env.example .env`, set DATABASE_URL, `npm i`, `npx prisma migrate dev`, `npm run dev`.
-Next phases: trips and seat map UI, M-Pesa STK + webhook, auth, Nganya CMS, admin.
+Adventure travel, road trips and Nganya culture platform. Next.js 14 (App Router) + Prisma + PostgreSQL.
+
+## Quick start
+```bash
+cp .env.example .env          # set DATABASE_URL, SESSION_SECRET (openssl rand -hex 32), CRON_SECRET, APP_URL
+npm install
+npx prisma migrate dev --name phase11_design_and_hardening
+npm run db:seed               # sample data, clearly labelled "Sample"
+npm run admin:create          # first Super Admin (see scripts/create-admin.ts)
+npm run dev
+```
+Before you push, run `npm run build` once and fix anything it reports. Fonts (Inter, Space Grotesk, Bebas Neue) are fetched from Google at build time.
+
+## Status
+Done: trips, atomic seat holds, M-Pesa STK + Paybill + C2B, tickets/QR/scanner, WhatsApp delivery, auth + roles, admin (trips, payments, refunds, promos, moderation, analytics/CSV), waitlist, reviews, loyalty points, Nganya showcase + moderated submissions, news, destinations, gallery lightbox, newsletter, sitemap/robots/JSON-LD, premium design system, 15-section homepage, trips filters/search/sort, 3-step booking flow.
+Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), transactional email + password reset, PDF tickets, image upload (admin forms take image URLs), Redis (rate limits are in-memory), polls/events CMS, AI support assistant, social feeds, automated tests.
+
+## Cron jobs (Authorization: Bearer $CRON_SECRET)
+`/api/cron/expire` every minute · `/api/cron/notify` every 5 min · `/api/cron/reminders` hourly · `/api/cron/waitlist` every 5 min.
+
+## Security notes
+Prices, totals, seat availability and payment status are always computed server-side. Seats attached to a booking cannot be taken by another buyer. Payment confirmation is one atomic path (`lib/confirm.ts`); duplicate callbacks are no-ops; wrong-amount payments are left pending and logged for staff. `middleware.ts` gates /admin and /account; roles are re-checked against the DB on every request. Rate limits are per-instance until Redis is added.
 
 ## WhatsApp ticket delivery
 1. In Meta Business, set up WhatsApp Cloud API and create a message template (category Utility, language `en`) named `ticket_confirmation`:

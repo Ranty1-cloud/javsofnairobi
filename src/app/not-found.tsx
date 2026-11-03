@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function NotFound() { return <div className="wrap narrow" style={{ textAlign: "center" }}><p className="eyebrow">404</p><h1 className="disp" style={{ fontSize: "5rem" }}>Wrong <span className="red">turn-off</span></h1><p className="mut">That page doesn&apos;t exist, or the trip has left the stage.</p><Link className="btn" href="/trips">Browse trips</Link></div>; }

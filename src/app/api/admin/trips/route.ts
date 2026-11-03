@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
-const body = z.object({ slug: z.string().regex(/^[a-z0-9-]+$/), title: z.string().min(3), category: z.string(), destinationId: z.string(), vehicleId: z.string(), departsAt: z.coerce.date(), meetingPoint: z.string(), priceKes: z.number().int().positive(), premiumPriceKes: z.number().int().positive().optional(), bookingFeeKes: z.number().int().min(0).default(0), published: z.boolean().default(false) });
+const body = z.object({ slug: z.string().regex(/^[a-z0-9-]+$/), title: z.string().min(3), category: z.string(), destinationId: z.string(), vehicleId: z.string(), departsAt: z.coerce.date(), meetingPoint: z.string(), priceKes: z.number().int().positive(), premiumPriceKes: z.number().int().positive().optional(), bookingFeeKes: z.number().int().min(0).default(0), published: z.boolean().default(false), imageUrl: z.string().url().optional(), summary: z.string().max(600).optional(), tripType: z.enum(["DAY", "OVERNIGHT", "WEEKEND"]).default("DAY"), durationLabel: z.string().max(60).optional() });
 export async function POST(req: Request) {
   const admin = await requireRole(["SUPER_ADMIN", "ADMIN", "BOOKING_MANAGER"]);
   if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
