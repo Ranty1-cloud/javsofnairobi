@@ -8,7 +8,8 @@
     "start": "next start",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "admin:create": "tsx scripts/create-admin.ts"
+    "admin:create": "tsx --env-file=.env scripts/create-admin.ts",
+    "admin:migrate-users": "tsx --env-file=.env scripts/migrate-users-to-supabase.ts"
   },
   "dependencies": {
     "next": "14.2.15",
@@ -16,11 +17,11 @@
     "react-dom": "18.3.1",
     "@prisma/client": "5.20.0",
     "zod": "3.23.8",
-    "argon2": "0.41.1",
-    "jose": "5.9.3",
     "qrcode": "1.5.4",
     "nodemailer": "6.9.15",
-    "pdf-lib": "1.17.1"
+    "pdf-lib": "1.17.1",
+    "@supabase/ssr": "0.5.2",
+    "@supabase/supabase-js": "2.46.1"
   },
   "devDependencies": {
     "typescript": "5.6.2",

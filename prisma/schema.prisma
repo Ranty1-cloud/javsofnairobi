@@ -45,11 +45,10 @@ model User {
   email        String          @unique
   name         String
   phone        String?
-  passwordHash String
+  authId       String?         @unique // Supabase auth.users.id; Supabase owns the password
   role         Role            @default(CUSTOMER)
   bookings     Booking[]
   loyalty      LoyaltyEntry[]
-  resets       PasswordReset[]
   createdAt    DateTime        @default(now())
   deletedAt    DateTime?
 }
@@ -311,17 +310,4 @@ model Subscriber {
   id        String   @id @default(cuid())
   email     String   @unique
   createdAt DateTime @default(now())
-}
-
-// Only a SHA-256 hash of the emailed token is stored, so a database leak cannot be used to take over accounts.
-model PasswordReset {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
-  tokenHash String    @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
-
-  @@index([userId])
 }

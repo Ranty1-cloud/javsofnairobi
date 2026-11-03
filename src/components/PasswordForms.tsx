@@ -14,14 +14,14 @@ export function ForgotForm() {
   }
   return <form onSubmit={go} style={{ maxWidth: 380 }}><input name="email" type="email" placeholder="Your account email" required autoComplete="email" /><button className="btn" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</button>{msg && <p role="status" className="mut">{msg}</p>}{err && <p role="alert" style={{ color: "#E50914" }}>{err}</p>}</form>;
 }
-export function ResetForm({ token }: { token: string }) {
+export function ResetForm() {
   const [done, setDone] = useState(false), [err, setErr] = useState(""), [busy, setBusy] = useState(false);
   async function go(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); setErr("");
     const f = new FormData(e.currentTarget), pw = String(f.get("password"));
     if (pw !== f.get("confirm")) return setErr("The two passwords do not match");
     setBusy(true);
-    const { ok, j } = await post("/api/auth/reset", { token, password: pw });
+    const { ok, j } = await post("/api/auth/reset", { password: pw });
     ok ? setDone(true) : setErr(j.error ?? "Something went wrong"); setBusy(false);
   }
   if (done) return <div className="card" style={{ maxWidth: 380 }}><b>Password updated.</b><p className="mut">You can log in with your new password now.</p><Link className="btn" href="/login">Log in</Link></div>;
