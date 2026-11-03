@@ -1,50 +1,51 @@
 import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
 
+// Usage:
+// npm run admin:create -- you@example.com 'a-long-password' 'Your Name'
+
+const [email, password, name = "Super Admin"] =
+  process.argv.slice(2);
+
 const db = new PrismaClient();
 
 async function main() {
-  const email = process.env.ADMIN_EMAIL;
-  const password = process.env.ADMIN_PASSWORD;
-  const name = process.env.ADMIN_NAME || "Super Admin";
-
-  if (!email || !password) {
-    throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD are required");
+  if (!email || !password || password.length < 10) {
+    throw new Error(
+      "Usage: email password (10+ characters) [name]"
+    );
   }
+
+  const normalizedEmail = email.toLowerCase();
+
+  const passwordHash = await argon2.hash(password, {
+    type: argon2.argon2id,
+  });
 
   const user = await db.user.upsert({
     where: {
-      email: email.toLowerCase()
+      email: normalizedEmail,
     },
     update: {
-      role: "SUPER_ADMIN"
+      role: "SUPER_ADMIN",
+      passwordHash,
     },
     create: {
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       name,
       role: "SUPER_ADMIN",
-      passwordHash: ""
-    }
-  });
-
-  const passwordHash = await argon2.hash(password, {
-    type: argon2.argon2id
-  });
-
-  await db.user.update({
-    where: {
-      id: user.id
+      passwordHash,
     },
-    data: {
-      passwordHash
-    }
   });
 
-  console.log("Super admin ready:", email);
+  console.log("Super admin ready:", user.email);
 }
 
 main()
-  .catch(console.error)
+  .catch((error) => {
+    console.error("Admin creation failed:", error);
+    process.exitCode = 1;
+  })
   .finally(async () => {
     await db.$disconnect();
   });
