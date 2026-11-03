@@ -4,13 +4,13 @@ import { db } from "@/lib/db";
 import { holderId } from "@/lib/holder";
 import { total } from "@/lib/pricing";
 import { getSession } from "@/lib/session";
-const body = z.object({ tripId: z.string(), labels: z.array(z.string()).min(1), phone: z.string().regex(/^(?:254|0)7\d{8}$|^(?:254|0)1\d{8}$/), email: z.string().email().optional(), passengers: z.array(z.object({ label: z.string(), name: z.string().min(2).max(80) })), whatsappOptIn: z.boolean().default(true), promoCode: z.string().max(30).optional() });
+const body = z.object({ tripId: z.string(), labels: z.array(z.string()).min(1), phone: z.string().regex(/^(?:254|0)7\d{8}$|^(?:254|0)1\d{8}$/), email: z.string().email().optional(), passengers: z.array(z.object({ label: z.string(), name: z.string().min(2).max(80) })), whatsappOptIn: z.boolean().default(true), promoCode: z.string().max(30).optional(), method: z.enum(["stk", "manual"]).default("stk") });
 const base = () => process.env.MPESA_ENV === "production" ? "https://api.safaricom.co.ke" : "https://sandbox.safaricom.co.ke";
 
 export async function POST(req: Request) {
   const p = body.safeParse(await req.json());
   if (!p.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
-  const { tripId, labels, phone, email, passengers, whatsappOptIn, promoCode } = p.data;
+  const { tripId, labels, phone, email, passengers, whatsappOptIn, promoCode, method } = p.data;
   const holder = holderId();
   const trip = await db.trip.findUnique({ where: { id: tripId } });
   const seats = await db.tripSeat.findMany({ where: { tripId, label: { in: labels }, status: "RESERVED", heldBy: holder, heldUntil: { gt: new Date() } } });
@@ -26,8 +26,9 @@ export async function POST(req: Request) {
     amount = Math.max(1, amount - discount); code = pc.code;
   }
   const booking = await db.booking.create({ data: { reference: "JVS" + Math.random().toString(36).slice(2, 8).toUpperCase(), tripId, guestEmail: email, phone: phone.replace(/^0/, "254"), whatsappOptIn, userId: (await getSession())?.userId, passengers: { create: passengers.filter(x => labels.includes(x.label)) }, totalKes: amount, discountKes: discount, promoCode: code, seats: { connect: seats.map(s => ({ id: s.id })) } } });
-  const payment = await db.payment.create({ data: { bookingId: booking.id, provider: "mpesa", idempotencyKey: `${booking.id}:stk`, amountKes: amount, status: "PENDING" } });
+  const payment = await db.payment.create({ data: { bookingId: booking.id, provider: method === "manual" ? "mpesa_manual" : "mpesa", idempotencyKey: `${booking.id}:stk`, amountKes: amount, status: "PENDING" } });
 
+  if (method === "manual") return NextResponse.json({ reference: booking.reference, id: booking.id }); // customer pays via Paybill; confirmed by receipt check or C2B
   const { MPESA_CONSUMER_KEY: k, MPESA_CONSUMER_SECRET: s, MPESA_SHORTCODE: sc, MPESA_PASSKEY: pk, MPESA_CALLBACK_URL: cb } = process.env;
   if (!k || !s || !sc || !pk || !cb) return NextResponse.json({ error: "M-Pesa is not configured" }, { status: 503 });
   const tok = await (await fetch(`${base()}/oauth/v1/generate?grant_type=client_credentials`, { headers: { Authorization: "Basic " + Buffer.from(`${k}:${s}`).toString("base64") } })).json();

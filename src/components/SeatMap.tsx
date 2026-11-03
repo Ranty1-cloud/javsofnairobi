@@ -24,8 +24,8 @@ export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats:
     } else await fetch("/api/seats/release", { method: "POST", body: JSON.stringify({ tripId, labels: [s.label] }) });
     setMsg(""); setSel(next);
   }
-  async function pay() {
-    const r = await fetch("/api/payments/mpesa/stk", { method: "POST", body: JSON.stringify({ tripId, labels: sel, phone, passengers: sel.map(label => ({ label, name: names[label] ?? "" })), whatsappOptIn: optIn, promoCode: promo || undefined }) });
+  async function pay(method = "stk") {
+    const r = await fetch("/api/payments/mpesa/stk", { method: "POST", body: JSON.stringify({ tripId, labels: sel, phone, passengers: sel.map(label => ({ label, name: names[label] ?? "" })), whatsappOptIn: optIn, promoCode: promo || undefined, method }) });
     const j = await r.json();
     if (r.ok) window.location.href = `/booking/${j.id}`; else setMsg(j.error ?? "Could not start payment");
   }
@@ -42,7 +42,7 @@ export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats:
         <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="07XXXXXXXX" style={{ padding: 12, borderRadius: 8 }} />
         <input placeholder="Promo code (optional, applied at payment)" value={promo} onChange={e => setPromo(e.target.value)} />
         <label style={{ display: "block", margin: "8px 0" }}><input type="checkbox" checked={optIn} onChange={e => setOptIn(e.target.checked)} style={{ width: "auto", marginRight: 8 }} />Send my tickets to this number on WhatsApp</label>
-        <button onClick={pay} style={{ marginLeft: 8, padding: "12px 20px", background: "#E50914", color: "#fff", border: 0, borderRadius: 8 }}>Pay with M-Pesa</button>
+        <button onClick={() => pay("manual")} className="btn" style={{ background: "#171717", marginLeft: 8 }}>Pay manually (Paybill)</button> <button onClick={() => pay()} style={{ marginLeft: 8, padding: "12px 20px", background: "#E50914", color: "#fff", border: 0, borderRadius: 8 }}>Pay with M-Pesa</button>
       </>}
       {msg && <p role="status">{msg}</p>}
     </div>

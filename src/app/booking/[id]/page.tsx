@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import AutoRefresh from "@/components/AutoRefresh";
+import ManualPay from "@/components/ManualPay";
 export const dynamic = "force-dynamic";
 export default async function Booking({ params }: { params: { id: string } }) {
   const b = await db.booking.findUnique({ where: { id: params.id }, include: { trip: true, seats: true, tickets: true, payments: true } });
@@ -15,6 +16,7 @@ export default async function Booking({ params }: { params: { id: string } }) {
       <p>{b.trip.title} · {b.trip.departsAt.toLocaleString("en-KE")}</p>
       <p>Seats: {b.seats.map(s => s.label).join(", ") || "released"} · Total <b>KSh {b.totalKes.toLocaleString()}</b></p>
       <div className="card"><b>{pay?.status === "FAILED" ? "Payment failed or was cancelled. Please try again." : msg[b.status]}</b></div>
+      {b.status === "PENDING" && pay?.provider === "mpesa_manual" && pay.status === "PENDING" && <ManualPay id={b.id} paybill={process.env.MPESA_PAYBILL ?? ""} reference={b.reference} amount={pay.amountKes} submitted={pay.providerRef} />}
       {b.status === "CONFIRMED" && <><h3>Your tickets</h3>{b.tickets.map(t => <p key={t.id}><Link className="btn" href={`/ticket/${t.token}`}>{t.passengerName}</Link></p>)}{!b.tickets.length && <p className="mut">Generating tickets...</p>}</>}
       {(b.status !== "CONFIRMED") && <p><Link href={`/trips/${b.trip.slug}`} className="btn">Back to seats</Link></p>}
     </main>
