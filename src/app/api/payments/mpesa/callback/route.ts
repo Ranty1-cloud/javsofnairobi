@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { issueTickets } from "@/lib/tickets";
+import { notifyBooking } from "@/lib/whatsapp";
 // Daraja does not sign callbacks, so we only trust a callback that matches a CheckoutRequestID we issued and the exact amount.
 export async function POST(req: Request) {
   const cb = (await req.json())?.Body?.stkCallback;
@@ -21,6 +22,9 @@ export async function POST(req: Request) {
     ...(ok ? [db.booking.update({ where: { id: pay.bookingId }, data: { status: "CONFIRMED" } }), db.tripSeat.updateMany({ where: { bookingId: pay.bookingId }, data: { status: "BOOKED", heldBy: null, heldUntil: null } })] : []),
     db.auditLog.create({ data: { action: "mpesa.callback", detail: { ref: cb.CheckoutRequestID, ok } } }),
   ]);
-  if (ok) await issueTickets(pay.bookingId);
+  if (ok) {
+    await issueTickets(pay.bookingId);
+    try { await notifyBooking(pay.bookingId); } catch (e) { console.error("whatsapp send failed", e); } // never block the M-Pesa ack
+  }
   return ack;
 }

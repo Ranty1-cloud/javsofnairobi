@@ -9,6 +9,7 @@ export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats:
   const [phone, setPhone] = useState("");
   const [msg, setMsg] = useState("");
   const [names, setNames] = useState<Record<string, string>>({});
+  const [optIn, setOptIn] = useState(true);
   useEffect(() => { if (!until) return; const t = setInterval(() => { const s = Math.max(0, Math.round((until - Date.now()) / 1000)); setLeft(s); if (!s) { setSel([]); setUntil(null); setMsg("Hold expired"); } }, 1000); return () => clearInterval(t); }, [until]);
   const sum = seats.filter(s => sel.includes(s.label)).reduce((a, s) => a + s.priceKes, 0) + (sel.length ? fee : 0);
   async function toggle(s: Seat) {
@@ -23,7 +24,7 @@ export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats:
     setMsg(""); setSel(next);
   }
   async function pay() {
-    const r = await fetch("/api/payments/mpesa/stk", { method: "POST", body: JSON.stringify({ tripId, labels: sel, phone, passengers: sel.map(label => ({ label, name: names[label] ?? "" })) }) });
+    const r = await fetch("/api/payments/mpesa/stk", { method: "POST", body: JSON.stringify({ tripId, labels: sel, phone, passengers: sel.map(label => ({ label, name: names[label] ?? "" })), whatsappOptIn: optIn }) });
     const j = await r.json();
     if (r.ok) window.location.href = `/booking/${j.id}`; else setMsg(j.error ?? "Could not start payment");
   }
@@ -38,6 +39,7 @@ export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats:
         <p>Seats {sel.join(", ")}: <b style={{ color: "#E50914" }}>KSh {sum.toLocaleString()}</b> (incl. KSh {fee} booking fee). Held for {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}</p>
         {sel.map(l => <input key={l} placeholder={`Passenger name, seat ${l}`} value={names[l] ?? ""} onChange={e => setNames({ ...names, [l]: e.target.value })} />)}
         <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="07XXXXXXXX" style={{ padding: 12, borderRadius: 8 }} />
+        <label style={{ display: "block", margin: "8px 0" }}><input type="checkbox" checked={optIn} onChange={e => setOptIn(e.target.checked)} style={{ width: "auto", marginRight: 8 }} />Send my tickets to this number on WhatsApp</label>
         <button onClick={pay} style={{ marginLeft: 8, padding: "12px 20px", background: "#E50914", color: "#fff", border: 0, borderRadius: 8 }}>Pay with M-Pesa</button>
       </>}
       {msg && <p role="status">{msg}</p>}

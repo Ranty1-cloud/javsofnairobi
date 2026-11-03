@@ -81,6 +81,9 @@ model Booking {
   payments Payment[]
   tickets Ticket[]
   passengers BookingPassenger[]
+  notifications Notification[]
+  phone String?
+  whatsappOptIn Boolean @default(false)
   createdAt DateTime @default(now())
 }
 model Payment {
@@ -168,4 +171,18 @@ model BookingPassenger {
   label String
   name String
   @@unique([bookingId, label])
+}
+
+model Notification {
+  id String @id @default(cuid())
+  bookingId String
+  booking Booking @relation(fields: [bookingId], references: [id])
+  channel String
+  status String
+  providerRef String? @unique
+  error String?
+  attempts Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([bookingId, channel])
 }
