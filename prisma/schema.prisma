@@ -63,6 +63,7 @@ model TripSeat {
   heldUntil DateTime?
   bookingId String?
   booking Booking? @relation(fields: [bookingId], references: [id])
+  ticket Ticket?
   @@unique([tripId, label])
   @@index([status, heldUntil])
 }
@@ -78,6 +79,7 @@ model Booking {
   totalKes Int
   seats TripSeat[]
   payments Payment[]
+  tickets Ticket[]
   createdAt DateTime @default(now())
 }
 model Payment {
@@ -105,5 +107,18 @@ model AuditLog {
   actor String?
   action String
   detail Json?
+  createdAt DateTime @default(now())
+}
+
+model Ticket {
+  id String @id @default(cuid())
+  token String @unique
+  bookingId String
+  booking Booking @relation(fields: [bookingId], references: [id])
+  seatId String @unique
+  seat TripSeat @relation(fields: [seatId], references: [id])
+  passengerName String
+  checkedInAt DateTime?
+  checkedInBy String?
   createdAt DateTime @default(now())
 }
