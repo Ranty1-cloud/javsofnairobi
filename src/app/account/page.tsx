@@ -9,10 +9,11 @@ export default async function Account() {
   if (!s) redirect("/login");
   const u = await db.user.findFirst({ where: { id: s.userId, deletedAt: null }, include: { bookings: { orderBy: { createdAt: "desc" }, include: { trip: true, seats: true, tickets: true, payments: true } } } });
   if (!u) redirect("/login");
+  const pts = await db.loyaltyEntry.aggregate({ where: { userId: u.id }, _sum: { points: true } });
   return (
     <main className="wrap">
       <h1>My <span style={{ color: "#E50914" }}>Bookings</span></h1>
-      <p className="mut">{u.name} · {u.email} {u.role !== "CUSTOMER" && <Link href="/admin">· Admin</Link>}</p><LogoutButton />
+      <p className="mut">{u.name} · {u.email} {u.role !== "CUSTOMER" && <Link href="/admin">· Admin</Link>}</p><LogoutButton /><p>Loyalty points: <b>{pts._sum.points ?? 0}</b> <span className="mut">(1 point per KSh 100 paid; rewards coming soon)</span></p>
       <div className="grid" style={{ marginTop: 20 }}>
         {u.bookings.map(b => (
           <div key={b.id} className="card">

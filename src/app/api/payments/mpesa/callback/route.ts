@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { issueTickets } from "@/lib/tickets";
 import { notifyBooking } from "@/lib/whatsapp";
+import { awardPoints } from "@/lib/loyalty";
 // Daraja does not sign callbacks, so we only trust a callback that matches a CheckoutRequestID we issued and the exact amount.
 export async function POST(req: Request) {
   const cb = (await req.json())?.Body?.stkCallback;
@@ -24,6 +25,7 @@ export async function POST(req: Request) {
   ]);
   if (ok) {
     await issueTickets(pay.bookingId);
+    await awardPoints(pay.bookingId);
     try { await notifyBooking(pay.bookingId); } catch (e) { console.error("whatsapp send failed", e); } // never block the M-Pesa ack
   }
   return ack;

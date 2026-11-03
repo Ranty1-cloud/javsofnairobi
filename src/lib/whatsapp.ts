@@ -1,4 +1,11 @@
 import { db } from "./db";
+export async function waSend(to: string, template: string, texts: string[]) {
+  const { WHATSAPP_TOKEN: tok, WHATSAPP_PHONE_ID: pid } = process.env;
+  if (!tok || !pid) return null;
+  const res = await fetch(`https://graph.facebook.com/v21.0/${pid}/messages`, { method: "POST", headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json" }, body: JSON.stringify({ messaging_product: "whatsapp", to, type: "template", template: { name: template, language: { code: "en" }, components: [{ type: "body", parameters: texts.map(text => ({ type: "text", text })) }] } }) }).catch(() => null);
+  const j = res ? await res.json().catch(() => ({})) : {};
+  return (j.messages?.[0]?.id as string | undefined) ?? null;
+}
 // Official WhatsApp Cloud API. Business-initiated messages must use a template approved in Meta (see README).
 export async function notifyBooking(bookingId: string, force = false) {
   const b = await db.booking.findUnique({ where: { id: bookingId }, include: { trip: true, tickets: true, passengers: true } });

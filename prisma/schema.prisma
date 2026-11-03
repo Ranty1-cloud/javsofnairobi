@@ -14,6 +14,7 @@ model User {
   passwordHash String
   role Role @default(CUSTOMER)
   bookings Booking[]
+  loyalty LoyaltyEntry[]
   createdAt DateTime @default(now())
   deletedAt DateTime?
 }
@@ -50,6 +51,7 @@ model Trip {
   isSample Boolean @default(true)
   seats TripSeat[]
   bookings Booking[]
+  reviews Review[]
   @@index([departsAt])
 }
 model TripSeat {
@@ -130,6 +132,7 @@ model Ticket {
   passengerName String
   checkedInAt DateTime?
   checkedInBy String?
+  review Review?
   createdAt DateTime @default(now())
 }
 
@@ -214,5 +217,26 @@ model Refund {
   amountKes Int
   reason String
   actor String
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id String @id @default(cuid())
+  tripId String
+  trip Trip @relation(fields: [tripId], references: [id])
+  ticketId String @unique
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  name String
+  rating Int
+  body String
+  approved Boolean @default(false)
+  createdAt DateTime @default(now())
+}
+model LoyaltyEntry {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  bookingId String @unique
+  points Int
   createdAt DateTime @default(now())
 }

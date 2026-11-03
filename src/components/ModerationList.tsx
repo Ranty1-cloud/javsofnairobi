@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-type Item = { type: "submission" | "comment"; id: string; title: string; body: string };
+type Item = { type: "submission" | "comment" | "review"; id: string; title: string; body: string };
 export default function ModerationList({ items }: { items: Item[] }) {
   const r = useRouter();
   const act = async (i: Item, action: string) => { await fetch("/api/admin/moderate", { method: "POST", body: JSON.stringify({ type: i.type, id: i.id, action }) }); r.refresh(); };

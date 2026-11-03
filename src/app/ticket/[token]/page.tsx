@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { db } from "@/lib/db";
 import PrintButton from "@/components/PrintButton";
+import ReviewForm from "@/components/ReviewForm";
 export const dynamic = "force-dynamic";
 export default async function TicketPage({ params }: { params: { token: string } }) {
   const t = await db.ticket.findUnique({ where: { token: params.token }, include: { seat: true, booking: { include: { trip: true, payments: true } } } });
@@ -24,6 +25,7 @@ export default async function TicketPage({ params }: { params: { token: string }
         </div>
       </div>
       <PrintButton />
+      {t.checkedInAt && <ReviewForm token={t.token} />}
     </main>
   );
 }

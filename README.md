@@ -10,3 +10,7 @@ Next phases: trips and seat map UI, M-Pesa STK + webhook, auth, Nganya CMS, admi
 3. Point the webhook at `/api/whatsapp/webhook` (same verify token; subscribe to `messages`) so delivery status updates.
 4. Schedule `GET /api/cron/notify` every few minutes with `Authorization: Bearer $CRON_SECRET` to retry failures.
 Until credentials exist, sending is skipped and tickets remain available on the booking page.
+
+### More WhatsApp templates (Utility, `en`)
+- `trip_reminder`: `Hi {{1}}, reminder: {{2}} departs {{3}}. Meeting point: {{4}}.` Schedule `/api/cron/reminders` hourly.
+- `trip_update`: `Hi {{1}}, an update for {{2}}: it now departs {{3}} from {{4}}.` Sent by `PATCH /api/admin/trips/:id` with `"notify": true`.

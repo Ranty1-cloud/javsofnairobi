@@ -17,6 +17,7 @@ export async function POST(req: Request) {
     db.payment.update({ where: { id: pay.id }, data: { status: "REFUNDED" } }),
     db.booking.update({ where: { id: bk.id }, data: { status: "REFUNDED" } }),
     db.tripSeat.updateMany({ where: { bookingId: bk.id }, data: { status: "AVAILABLE", bookingId: null, heldBy: null, heldUntil: null } }),
+    db.loyaltyEntry.deleteMany({ where: { bookingId: bk.id } }), // points are reversed with the refund
     db.auditLog.create({ data: { actor: u.id, action: "booking.refund", detail: { bookingId: bk.id, amountKes: pay.amountKes } } }),
   ]);
   return NextResponse.json({ ok: true, amountKes: pay.amountKes, note: "Send the payout manually, then reconcile" });
