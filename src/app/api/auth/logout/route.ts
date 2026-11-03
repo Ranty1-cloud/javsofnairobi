@@ -1,3 +1,6 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-export async function POST() { cookies().delete("session"); return NextResponse.json({ ok: true }); }
+import { supabaseServer, supabaseConfigured } from "@/lib/supabase";
+export async function POST() {
+  if (supabaseConfigured()) await supabaseServer().auth.signOut();
+  return NextResponse.json({ ok: true });
+}

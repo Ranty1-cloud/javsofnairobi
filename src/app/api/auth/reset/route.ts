@@ -1,29 +1,21 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import argon2 from "argon2";
-import { createHash } from "crypto";
 import { db } from "@/lib/db";
+import { supabaseServer, supabaseConfigured } from "@/lib/supabase";
 import { limited, clientIp } from "@/lib/ratelimit";
-const body = z.object({ token: z.string().min(20).max(100), password: z.string().min(10).max(128) });
-// A function, not a shared constant: a Response body can only be read once, so each request needs its own instance.
+const body = z.object({ password: z.string().min(10).max(128) });
 const BAD = () => NextResponse.json({ error: "This link is invalid or has expired. Request a new one." }, { status: 400 });
 export async function POST(req: Request) {
+  if (!supabaseConfigured()) return NextResponse.json({ error: "Not configured yet" }, { status: 503 });
   if (limited("rs:" + clientIp(req), 10)) return NextResponse.json({ error: "Too many attempts, try again later" }, { status: 429 });
   const p = body.safeParse(await req.json().catch(() => null));
   if (!p.success) return NextResponse.json({ error: "Password must be 10 to 128 characters" }, { status: 400 });
-  const tokenHash = createHash("sha256").update(p.data.token).digest("hex");
-  const row = await db.passwordReset.findUnique({ where: { tokenHash } });
-  if (!row || row.usedAt || row.expiresAt < new Date()) return BAD();
-  const passwordHash = await argon2.hash(p.data.password, { type: argon2.argon2id });
-  try {
-    await db.$transaction(async tx => {
-      // Conditional claim: two simultaneous submissions cannot both consume the same link.
-      const c = await tx.passwordReset.updateMany({ where: { id: row.id, usedAt: null, expiresAt: { gt: new Date() } }, data: { usedAt: new Date() } });
-      if (!c.count) throw new Error("claimed");
-      await tx.user.update({ where: { id: row.userId }, data: { passwordHash } });
-      await tx.passwordReset.updateMany({ where: { userId: row.userId, usedAt: null }, data: { usedAt: new Date() } });
-      await tx.auditLog.create({ data: { actor: row.userId, action: "password.reset_done" } });
-    });
-  } catch { return BAD(); }
+  const sb = supabaseServer();
+  // The emailed link signs the person in (see /auth/callback); this only works for that recovery session.
+  const { data } = await sb.auth.getUser();
+  if (!data.user) return BAD();
+  const { error } = await sb.auth.updateUser({ password: p.data.password });
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  await db.auditLog.create({ data: { actor: data.user.id, action: "password.reset_done" } }).catch(() => null);
   return NextResponse.json({ ok: true });
 }

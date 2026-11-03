@@ -3,7 +3,7 @@ Adventure travel, road trips and Nganya culture platform. Next.js 14 (App Router
 
 ## Quick start
 ```bash
-cp .env.example .env          # set DATABASE_URL, SESSION_SECRET (openssl rand -hex 32), CRON_SECRET, APP_URL
+cp .env.example .env          # set DATABASE_URL, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, CRON_SECRET, APP_URL
 npm install
 npx prisma migrate dev --name phase11_design_and_hardening
 npm run db:seed               # sample data, clearly labelled "Sample"
@@ -16,6 +16,13 @@ Before you push, run `npm run build` once and fix anything it reports. Fonts (In
 Done: trips, atomic seat holds, M-Pesa STK + Paybill + C2B, tickets/QR/scanner, WhatsApp delivery, auth + roles, admin (trips, payments, refunds, promos, moderation, analytics/CSV), waitlist, reviews, loyalty points, Nganya showcase + moderated submissions, news, destinations, gallery lightbox, newsletter, sitemap/robots/JSON-LD, premium design system, 15-section homepage, trips filters/search/sort, 3-step booking flow.
 Also done: ticket emails with PDF attached, PDF ticket downloads, password reset by email.
 Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), image upload (admin forms take image URLs), Redis (rate limits are in-memory), polls/events CMS, AI support assistant, social feeds, automated tests.
+
+## Auth (Supabase)
+Login, sign-up, password reset and sessions run on Supabase Auth. The `User` table keeps the profile and role, and its `id` is the Supabase auth user id.
+1. Supabase dashboard > Authentication > URL Configuration: set Site URL to your production URL and add `https://YOUR-DOMAIN/auth/callback` (and your Vercel preview URL if you use it) to Redirect URLs.
+2. Authentication > Providers > Email: leave "Confirm email" on for production (sign-up then asks people to confirm), or turn it off while testing.
+3. Create the first admin: `NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... DATABASE_URL=... npm run admin:create -- you@example.com 'a-long-password' 'Your Name'`.
+Supabase sends the confirmation and reset emails. Its built-in sender is rate limited, so set your own SMTP under Authentication > SMTP Settings before launch.
 
 ## Cron jobs (Authorization: Bearer $CRON_SECRET)
 `/api/cron/expire` every minute · `/api/cron/notify` every 5 min (retries failed WhatsApp and email) · `/api/cron/reminders` hourly · `/api/cron/waitlist` every 5 min.
@@ -41,7 +48,7 @@ Customers choose "Pay manually (Paybill)", pay MPESA_PAYBILL with their booking 
 - Auto: register C2B URLs with Daraja (Register URL API) using `https://your-domain/api/payments/mpesa/c2b/confirmation?k=$MPESA_C2B_SECRET` and `.../c2b/validation`. Exact reference + exact amount matches confirm automatically; anything else is left in the audit log for staff.
 - Waitlist template `seat_available`: `Seats have opened on {{1}}. Book now: {{2}}`. Schedule `/api/cron/waitlist`.
 
-## Email (tickets and password reset)
+## Email (tickets)
 Provider-neutral SMTP via nodemailer. Any provider that offers SMTP works (Resend, Brevo, Mailgun, Zoho, Google Workspace).
 1. Set `SMTP_HOST`, `SMTP_PORT` (587 STARTTLS or 465 TLS), `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` in `.env`.
 2. Verify your sending domain with the provider (SPF and DKIM), otherwise tickets land in spam.
