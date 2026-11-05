@@ -18,7 +18,8 @@ export default async function Home() {
     db.review.findMany({ where: { approved: true }, orderBy: { createdAt: "desc" }, take: 3 }),
     db.ticket.count(), db.trip.count({ where: { published: true, departsAt: { gt: new Date() } } }), db.destination.count(), db.article.count({ where: liveArticles() }),
   ]);
-  const next = trips[0], heroImg = next?.imageUrl ?? gallery[0]?.url;
+  const heroSetting = await db.siteSetting.findUnique({ where: { key: "heroImage" } });
+  const next = trips[0], heroImg = heroSetting?.value ?? next?.imageUrl ?? gallery[0]?.url;
   return (
     <>
       <section className="hero">

@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const email = p.data.email.toLowerCase();
   if (limited("fp:" + clientIp(req), 5) || limited("fpe:" + email, 3)) return NextResponse.json({ error: "Too many requests, try again later" }, { status: 429 });
   // Supabase sends the email (template "Reset Password", see README). The link lands on /auth/confirm, then /reset.
-  const { error } = await supabaseServer().auth.resetPasswordForEmail(email);
+  const { error } = await supabaseServer().auth.resetPasswordForEmail(email, { redirectTo: `${new URL(req.url).origin}/auth/callback` });
   if (error) console.error("password reset request failed", error.message);
   return NextResponse.json(GENERIC); // same answer whether or not the account exists
 }
