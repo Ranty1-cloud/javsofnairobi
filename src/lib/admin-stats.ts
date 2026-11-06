@@ -66,7 +66,7 @@ export async function dashboardStats(days: number) {
   };
 
   const seatsBy = new Map<string, { BOOKED: number; RESERVED: number; AVAILABLE: number }>();
-  seatGroups.forEach(g => { const e = seatsBy.get(g.tripId) ?? { BOOKED: 0, RESERVED: 0, AVAILABLE: 0 }; e[g.status] = g._count; seatsBy.set(g.tripId, e); });
+  seatGroups.forEach(g => { const e = seatsBy.get(g.tripId) ?? { BOOKED: 0, RESERVED: 0, AVAILABLE: 0 }; e[g.status as "BOOKED" | "RESERVED" | "AVAILABLE"] = g._count; seatsBy.set(g.tripId, e); });
   const occupancy = upcoming.map(t => {
     const s = seatsBy.get(t.id) ?? { BOOKED: 0, RESERVED: 0, AVAILABLE: 0 };
     const total = s.BOOKED + s.RESERVED + s.AVAILABLE;
@@ -78,7 +78,7 @@ export async function dashboardStats(days: number) {
 
   return {
     days, since,
-    revenue: split(pays, p => p.amountKes),
+    revenue: split<{ createdAt: Date; amountKes: number }>(pays, p => p.amountKes),
     bookings: split(confirmed, () => 1),
     customers: split(users, () => 1),
     created: curBooks.length,
