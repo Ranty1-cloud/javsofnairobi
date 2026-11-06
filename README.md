@@ -15,7 +15,7 @@ Before you push, run `npm run build` once and fix anything it reports. Fonts (In
 ## Status
 Done: trips, atomic seat holds, M-Pesa STK + Paybill + C2B, tickets/QR/scanner, WhatsApp delivery, auth + roles, admin (trips, payments, refunds, promos, moderation, analytics/CSV), waitlist, reviews, loyalty points, Nganya showcase + moderated submissions, news, destinations, gallery lightbox, newsletter, sitemap/robots/JSON-LD, premium design system, 15-section homepage, trips filters/search/sort, 3-step booking flow.
 Also done: ticket emails with PDF attached (Supabase Edge Function), PDF ticket downloads, password reset by email, analytics dashboard with charts, homepage photo manager.
-Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), image upload for trips, articles and gallery (admin forms still take image URLs; the homepage photo does have uploads), Redis (rate limits are in-memory), polls/events CMS, AI support assistant, social feeds, automated tests.
+Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), Redis (rate limits are in-memory), polls/events CMS, AI support assistant, social feeds, automated tests.
 
 ## Auth (Supabase)
 
@@ -34,7 +34,7 @@ Setup in the Supabase dashboard:
 6. `npx prisma migrate dev --name supabase_auth` (adds `User.authId`, drops `passwordHash` and `PasswordReset`).
 7. Existing users: `npm run admin:migrate-users` links them to Supabase; they set a new password with Forgot password (old argon2 hashes cannot be moved).
 
-Staff: `npm run admin:create` makes a Super Admin. A Super Admin can invite staff with `POST /api/admin/staff` `{email, name, role}` and change roles with `PATCH /api/admin/staff` `{email, role}`.
+Staff: `npm run admin:create` makes a Super Admin. A Super Admin manages the team at `/admin/staff` (invite by email, change roles, remove access). The same actions exist as `POST` and `PATCH /api/admin/staff`.
 
 ## Cron jobs (Authorization: Bearer $CRON_SECRET)
 `/api/cron/expire` every minute · `/api/cron/notify` every 5 min (retries failed WhatsApp and email) · `/api/cron/reminders` hourly · `/api/cron/waitlist` every 5 min.
@@ -78,3 +78,24 @@ PDF tickets: `/api/tickets/:token/pdf` (token is the credential) and `/api/booki
 ## Homepage photo
 `/admin/site` (Super Admin, Administrator, Content Editor): drag and drop photos, preview them behind the real headline, switch the live photo from the library, delete old ones, or go back to the automatic photo. Photos are shrunk to WebP in the browser, then uploaded straight to Supabase Storage with a one-time signed token (no 4.5 MB serverless limit).
 Setup: create a **public** Storage bucket, set `SUPABASE_BUCKET` to its name. Uploads go to `site/hero-*.{jpg,png,webp}`.
+
+## Admin screens
+| Page | Who | What |
+|---|---|---|
+| `/admin` and `/admin/analytics` | all staff (money figures: Super Admin, Admin, Finance) | Live dashboard, charts, CSV |
+| `/admin/manage` | by form | Create trips, articles, destinations, Nganya, gallery. Image fields upload straight to Supabase Storage (shrunk to WebP in the browser) or accept a pasted link |
+| `/admin/site` | Super Admin, Admin, Content Editor | Homepage photo library |
+| `/admin/boarding` | Super Admin, Admin, Booking Manager, Support | Per-trip passenger list, "boarded X of Y", manual check-in and undo (auto-refreshes within 12 hours of departure) |
+| `/admin/waitlist` | Super Admin, Admin, Booking Manager, Support | Who is waiting per trip, one-tap WhatsApp or email |
+| `/admin/promos` | Super Admin, Admin, Finance | Create codes, turn on or off (codes are never deleted) |
+| `/admin/staff` | Super Admin | Invite staff, change roles |
+| `/admin/audit` | Super Admin, Admin | Searchable, paged log of who did what |
+
+All uploads need the public Storage bucket from the Homepage photo section (`SUPABASE_BUCKET`).
+
+## Support assistant and WhatsApp button
+A chat button and a WhatsApp button float on every public page (hidden in `/admin`). Set `NEXT_PUBLIC_WHATSAPP` (country code, no plus, e.g. `2547XXXXXXXX`) for the WhatsApp button and hand-offs.
+The assistant answers only from `src/lib/support-kb.ts`, the same list the Support page shows. Edit that file to add policies, and only add what the business has confirmed (refund terms are still marked as to be confirmed). It cannot see bookings or payments, tells people to message the team for those, and any reply that claims a payment or booking outcome is replaced with a hand-off before it reaches the customer.
+- With `ANTHROPIC_API_KEY` set it uses Claude (`ANTHROPIC_MODEL`, default `claude-haiku-5-5`) with the FAQ as its only source.
+- Without a key it falls back to plain keyword matching against the FAQ and hands off to WhatsApp. No AI is claimed in that mode.
+Messages are not stored. Rate limit is 12 per minute per IP, in memory like the other limiters, so move it to Redis before scaling out.

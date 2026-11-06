@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { waSend } from "@/lib/whatsapp";
-const b = z.object({ departsAt: z.coerce.date().optional(), meetingPoint: z.string().min(2).optional(), published: z.boolean().optional(), notify: z.boolean().default(false) });
+const b = z.object({ departsAt: z.coerce.date().optional(), meetingPoint: z.string().min(2).optional(), published: z.boolean().optional(), imageUrl: z.string().url().optional(), notify: z.boolean().default(false) });
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const u = await requireRole(["SUPER_ADMIN", "ADMIN", "BOOKING_MANAGER"]);
   if (!u) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
