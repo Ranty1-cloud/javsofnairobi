@@ -14,8 +14,8 @@ Before you push, run `npm run build` once and fix anything it reports. Fonts (In
 
 ## Status
 Done: trips, atomic seat holds, M-Pesa STK + Paybill + C2B, tickets/QR/scanner, WhatsApp delivery, auth + roles, admin (trips, payments, refunds, promos, moderation, analytics/CSV), waitlist, reviews, loyalty points, Nganya showcase + moderated submissions, news, destinations, gallery lightbox, newsletter, sitemap/robots/JSON-LD, premium design system, 15-section homepage, trips filters/search/sort, 3-step booking flow.
-Also done: ticket emails with PDF attached, PDF ticket downloads, password reset by email.
-Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), image upload (admin forms take image URLs), Redis (rate limits are in-memory), polls/events CMS, AI support assistant, social feeds, automated tests.
+Also done: ticket emails with PDF attached (Supabase Edge Function), PDF ticket downloads, password reset by email, analytics dashboard with charts, homepage photo manager.
+Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), image upload for trips, articles and gallery (admin forms still take image URLs; the homepage photo does have uploads), Redis (rate limits are in-memory), polls/events CMS, AI support assistant, social feeds, automated tests.
 
 ## Auth (Supabase)
 
@@ -26,7 +26,7 @@ Setup in the Supabase dashboard:
 1. Project Settings > API: copy the URL, the anon key and the service_role key into `.env` (and Vercel). The service_role key is a server-only secret.
 2. Authentication > URL Configuration: Site URL = your `APP_URL`; add Redirect URLs `https://your-domain/**` and `http://localhost:3000/**`.
 3. Authentication > Providers > Email: keep "Confirm email" on, set minimum password length to 10.
-4. Authentication > SMTP Settings: add your own SMTP (Supabase's built-in mailer allows only a few emails an hour). Reuse the SMTP values from the Email section.
+4. Authentication > SMTP Settings: add your own SMTP (Supabase's built-in mailer allows only a few emails an hour). See the Email section (Resend SMTP).
 5. Authentication > Email Templates: set the link in each template to:
    - Confirm signup: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/trips`
    - Invite user: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite`
@@ -60,10 +60,21 @@ Customers choose "Pay manually (Paybill)", pay MPESA_PAYBILL with their booking 
 - Auto: register C2B URLs with Daraja (Register URL API) using `https://your-domain/api/payments/mpesa/c2b/confirmation?k=$MPESA_C2B_SECRET` and `.../c2b/validation`. Exact reference + exact amount matches confirm automatically; anything else is left in the audit log for staff.
 - Waitlist template `seat_available`: `Seats have opened on {{1}}. Book now: {{2}}`. Schedule `/api/cron/waitlist`.
 
-## Email (tickets)
-Provider-neutral SMTP via nodemailer. Any provider that offers SMTP works (Resend, Brevo, Mailgun, Zoho, Google Workspace).
-1. Set `SMTP_HOST`, `SMTP_PORT` (587 STARTTLS or 465 TLS), `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` in `.env`.
-2. Verify your sending domain with the provider (SPF and DKIM), otherwise tickets land in spam.
-3. `npx prisma migrate dev --name email_pdf_password_reset` adds the `PasswordReset` table.
-Until SMTP is set, nothing is sent: tickets stay on the booking page and password reset requests are only logged server-side.
+## Email (Supabase)
+All email goes through your Supabase project. There is no SMTP config in the Next.js app.
+- **Auth emails** (sign-up confirmation, staff invites, password reset) are sent by Supabase Auth. In Supabase: Authentication > SMTP Settings, add a custom SMTP provider (Resend works: host `smtp.resend.com`, port 465, user `resend`, password = your Resend API key), otherwise Supabase's built-in mailer is limited to a few emails an hour.
+- **Ticket emails** (booking confirmation with the PDF attached) are sent by the `send-email` Edge Function in `supabase/functions/send-email`. Supabase has no generic "send any email" API, so the function delivers through Resend and keeps the key as a Supabase secret.
+```bash
+supabase login && supabase link --project-ref YOUR-PROJECT-REF
+supabase secrets set RESEND_API_KEY=re_xxx EMAIL_FROM="JAVS OF NAIROBI <tickets@your-domain>"
+supabase functions deploy send-email --no-verify-jwt
+```
+Verify your sending domain in Resend (SPF and DKIM), otherwise tickets land in spam. The function only accepts requests carrying your service-role key, so it is not an open relay. Until it is deployed, nothing is sent: the notification is recorded as FAILED with the reason, `/api/cron/notify` retries it, and tickets stay on the booking page.
 PDF tickets: `/api/tickets/:token/pdf` (token is the credential) and `/api/bookings/:id/pdf` (owner or staff). Only CONFIRMED bookings produce a PDF.
+
+## Admin dashboard
+`/admin` is the control room: revenue, bookings, new customers, seat occupancy and conversion with previous-period comparison, revenue and booking charts, booking outcomes, upcoming-trip seat meters, top trips and destinations, a "needs attention" queue and recent payments. `/admin/analytics` adds payment methods, average booking value, returning customers, news engagement and CSV exports. Every figure is computed from the database; 7, 30 and 90 day ranges, Nairobi time. Revenue figures are only shown to Super Admin, Administrator and Finance Manager roles on the dashboard.
+
+## Homepage photo
+`/admin/site` (Super Admin, Administrator, Content Editor): drag and drop photos, preview them behind the real headline, switch the live photo from the library, delete old ones, or go back to the automatic photo. Photos are shrunk to WebP in the browser, then uploaded straight to Supabase Storage with a one-time signed token (no 4.5 MB serverless limit).
+Setup: create a **public** Storage bucket, set `SUPABASE_BUCKET` to its name. Uploads go to `site/hero-*.{jpg,png,webp}`.

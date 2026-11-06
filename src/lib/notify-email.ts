@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { sendMail, shell, button, esc } from "./email";
+import { sendMail, emailConfigured, shell, button, esc } from "./email";
 import { ticketsForBooking, renderTicketsPdf } from "./pdf";
 import { fmtDate, fmtTime, site } from "./format";
 // Same claim pattern as WhatsApp: the unique (bookingId, channel) Notification row makes duplicate confirmations harmless.
@@ -8,7 +8,7 @@ export async function notifyEmail(bookingId: string, force = false) {
   const b = await db.booking.findUnique({ where: { id: bookingId }, include: { trip: true, user: true, passengers: true } });
   const to = b?.guestEmail ?? b?.user?.email;
   if (!b || b.status !== "CONFIRMED" || !to) return "skipped";
-  if (!process.env.SMTP_HOST || !process.env.EMAIL_FROM) return "not_configured";
+  if (!emailConfigured()) return "not_configured";
   const pack = await ticketsForBooking(bookingId);
   if (!pack) return "skipped";
   const n = await db.notification.findUnique({ where: { bookingId_channel: { bookingId, channel: "email" } } });
