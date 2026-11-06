@@ -15,7 +15,7 @@ Before you push, run `npm run build` once and fix anything it reports. Fonts (In
 ## Status
 Done: trips, atomic seat holds, M-Pesa STK + Paybill + C2B, tickets/QR/scanner, WhatsApp delivery, auth + roles, admin (trips, payments, refunds, promos, moderation, analytics/CSV), waitlist, reviews, loyalty points, Nganya showcase + moderated submissions, news, destinations, gallery lightbox, newsletter, sitemap/robots/JSON-LD, premium design system, 15-section homepage, trips filters/search/sort, 3-step booking flow.
 Also done: ticket emails with PDF attached (Supabase Edge Function), PDF ticket downloads, password reset by email, analytics dashboard with charts, homepage photo manager.
-Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), Redis (rate limits are in-memory), polls/events CMS, social feeds, automated tests.
+Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), Redis (rate limits are in-memory), polls/events CMS, AI-written chat answers, social feeds, automated tests.
 
 ## Auth (Supabase)
 
@@ -93,9 +93,7 @@ Setup: create a **public** Storage bucket, set `SUPABASE_BUCKET` to its name. Up
 
 All uploads need the public Storage bucket from the Homepage photo section (`SUPABASE_BUCKET`).
 
-## Support assistant and WhatsApp button
-A chat button and a WhatsApp button float on every public page (hidden in `/admin`). Set `NEXT_PUBLIC_WHATSAPP` (country code, no plus, e.g. `2547XXXXXXXX`) for the WhatsApp button and hand-offs.
-The assistant answers only from `src/lib/support-kb.ts`, the same list the Support page shows. Edit that file to add policies, and only add what the business has confirmed (refund terms are still marked as to be confirmed). It cannot see bookings or payments, tells people to message the team for those, and any reply that claims a payment or booking outcome is replaced with a hand-off before it reaches the customer.
-- With `ANTHROPIC_API_KEY` set it uses Claude (`ANTHROPIC_MODEL`, default `claude-haiku-5-5`) with the FAQ as its only source.
-- Without a key it falls back to plain keyword matching against the FAQ and hands off to WhatsApp. No AI is claimed in that mode.
-Messages are not stored. Rate limit is 12 per minute per IP, in memory like the other limiters, so move it to Redis before scaling out.
+## Support chat and WhatsApp button
+A help-chat button and a WhatsApp button float on every public page (hidden in `/admin`). Set `NEXT_PUBLIC_WHATSAPP` (country code, no plus, e.g. `2547XXXXXXXX`) for the WhatsApp button and hand-offs.
+The chat is free and uses no AI or API key. It matches the visitor's question against `src/lib/support-kb.ts` (the same list the Support page shows) and, when nothing matches, offers to continue on WhatsApp with a person. Edit that file to add policies, and only add what the business has confirmed (refund terms are still marked as to be confirmed). It cannot see bookings or payments, so it never claims a payment or booking outcome.
+Messages are not stored. Rate limit is 12 per minute per IP, in memory like the other limiters, so move it to Redis before scaling out. An AI-written answer step could be added later behind the same route.
