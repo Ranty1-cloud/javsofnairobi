@@ -1,0 +1,3 @@
+# Only the Edge Function config lives here. The function checks the service-role key itself (see index.ts).
+[functions.send-email]
+verify_jwt = false
