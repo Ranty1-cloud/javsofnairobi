@@ -15,7 +15,7 @@ Before you push, run `npm run build` once and fix anything it reports. Fonts (In
 ## Status
 Done: trips, atomic seat holds, M-Pesa STK + Paybill + C2B, tickets/QR/scanner, WhatsApp delivery, auth + roles, admin (trips, payments, refunds, promos, moderation, analytics/CSV), waitlist, reviews, loyalty points, Nganya showcase + moderated submissions, news, destinations, gallery lightbox, newsletter, sitemap/robots/JSON-LD, premium design system, 15-section homepage, trips filters/search/sort, 3-step booking flow.
 Also done: ticket emails with PDF attached (Supabase Edge Function), PDF ticket downloads, password reset by email, analytics dashboard with charts, homepage photo manager.
-Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), Redis (rate limits are in-memory), polls/events CMS, AI support assistant, social feeds, automated tests.
+Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), Redis (rate limits are in-memory), polls/events CMS, social feeds, automated tests.
 
 ## Auth (Supabase)
 
