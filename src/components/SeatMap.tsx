@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { TILL, STK_ENABLED } from "@/lib/pay";
 type Seat = { label: string; priceKes: number; status: string };
 const rowOf = (l: string) => l.replace(/\d+$/, ""), numOf = (l: string) => Number(l.replace(/\D/g, ""));
 export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats: Seat[]; fee: number }) {
@@ -67,8 +68,14 @@ export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats:
         </div>}
         {step === 3 && <div className="card">
           <h3>Review &amp; pay</h3>
-          <p className="mut">Seats {sel.join(", ")} for {sel.map(l => names[l]).join(", ")}. We&apos;ll send an M-Pesa prompt to <b>{phone}</b>. No hidden charges: the total below is recalculated on our server at payment.</p>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><button className="btn" disabled={busy} onClick={() => pay("stk")}>{busy ? "Starting…" : "Pay with M-Pesa (STK push)"}</button><button className="btn ghost" disabled={busy} onClick={() => pay("manual")}>Pay manually via Paybill</button></div>
+          <p className="mut">Seats {sel.join(", ")} for {sel.map(l => names[l]).join(", ")}. We&apos;ll keep these seats for you while you pay. No hidden charges: the total is recalculated on our server at payment.</p>
+          <div className="paybox">
+            <button className="btn" disabled={busy} onClick={() => pay("manual")}>{busy ? "Starting…" : `Pay with M-Pesa Till ${TILL}`}</button>
+            <p className="mut" style={{ fontSize: ".85rem", margin: "10px 0 0" }}>You will get the steps and the exact amount on the next page. Pay from the M-Pesa menu, then enter your M-Pesa code so we can confirm your seats.</p>
+          </div>
+          {STK_ENABLED
+            ? <div style={{ marginTop: 12 }}><button className="btn ghost" disabled={busy} onClick={() => pay("stk")}>Pay with an M-Pesa prompt (STK push)</button></div>
+            : <div className="soon" role="note"><span className="badge amber">Coming soon</span><span><b>M-Pesa STK push</b>: a payment prompt sent straight to your phone. For now, please pay to our Till.</span></div>}
           <p className="mut" style={{ fontSize: ".8rem" }}>Card and international payments are not enabled yet.</p>
         </div>}
         <div style={{ display: "flex", gap: 10, marginTop: 18 }}>

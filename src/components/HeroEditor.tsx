@@ -1,24 +1,9 @@
 "use client";
 import { useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { shrinkImage as shrink } from "@/lib/shrink-image";
 
 type Item = { url: string; path: string };
-const MAX_SIDE = 2400;
-
-// Resize and re-encode as WebP in the browser before uploading: faster uploads, and a lighter homepage for visitors on slow data.
-async function shrink(file: File): Promise<File> {
-  try {
-    const bmp = await createImageBitmap(file);
-    const scale = Math.min(1, MAX_SIDE / Math.max(bmp.width, bmp.height));
-    const c = document.createElement("canvas");
-    c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
-    c.getContext("2d")!.drawImage(bmp, 0, 0, c.width, c.height);
-    const blob = await new Promise<Blob | null>(r => c.toBlob(r, "image/webp", 0.86));
-    if (!blob || blob.type !== "image/webp" || blob.size >= file.size) return file;
-    return new File([blob], file.name.replace(/\.\w+$/, "") + ".webp", { type: "image/webp" });
-  } catch { return file; }
-}
-
 export default function HeroEditor({ active: a0, library: l0 }: { active: string | null; library: Item[] }) {
   const [active, setActive] = useState(a0);
   const [library, setLibrary] = useState<Item[]>(() => (a0 && !l0.some(i => i.url === a0) ? [{ url: a0, path: "" }, ...l0] : l0));
