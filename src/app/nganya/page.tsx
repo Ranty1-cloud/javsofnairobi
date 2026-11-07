@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import SubmitForm from "@/components/SubmitForm";
 import TripCard from "@/components/TripCard";
 import { toCard, tripInclude, liveArticles } from "@/lib/queries";
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export const metadata = { title: "Nganya Culture", description: "Kenyan matatu culture: news, showcases, events and community stories." };
 export default async function Nganya() {
   const [profiles, news, trips] = await Promise.all([
@@ -18,7 +18,7 @@ export default async function Nganya() {
       </section>
       <div className="wrap">
         <div className="sec-head"><h2>Showcase</h2></div>
-        <div className="grid">{profiles.map(n => <article key={n.id} className="card" style={{ padding: 0, overflow: "hidden" }}>{n.imageUrl && <img src={n.imageUrl} alt={n.name} loading="lazy" style={{ aspectRatio: "16/10", objectFit: "cover", width: "100%" }} />}<div style={{ padding: 20 }}><h3 className="disp" style={{ fontSize: "1.9rem", margin: 0 }}>{n.name}</h3>{n.crew && <p className="red" style={{ margin: "2px 0 8px" }}>Crew: {n.crew}</p>}<p className="mut" style={{ margin: 0 }}>{n.bio}</p></div></article>)}{!profiles.length && <div className="empty">Featured Nganyas are added by our editors. Know one that deserves the spotlight? Submit it below.</div>}</div>
+        <div className="grid">{profiles.map(n => <article key={n.id} className="card" style={{ padding: 0, overflow: "hidden" }}>{n.imageUrl && <img src={n.imageUrl} alt={n.name} loading="lazy" style={{ aspectRatio: "16/10", objectFit: "cover", width: "100%" }} />}<div style={{ padding: 20 }}><h3 className="disp" style={{ fontSize: "1.9rem", margin: 0 }}>{n.name}</h3>{n.crew && <p className="red" style={{ margin: "2px 0 8px" }}>Crew: {n.crew}</p>}<p className="mut" style={{ margin: 0 }}>{n.bio}</p></div></article>)}{!profiles.length && <div className="empty">Know a Nganya that deserves the spotlight? Submit it below.</div>}</div>
         {trips.length > 0 && <><div className="sec-head" style={{ marginTop: 56 }}><h2>Nganya events &amp; trips</h2><Link href="/trips?cat=Nganya">All →</Link></div><div className="grid">{trips.map(t => <TripCard key={t.id} t={toCard(t)} />)}</div></>}
         <div className="sec-head" style={{ marginTop: 56 }}><h2>Nganya news</h2><Link href="/news?c=Nganya">All →</Link></div>
         <div className="grid">{news.map(a => <Link key={a.id} className="card" href={`/news/${a.slug}`}><span className="badge red">{a.category}</span><h3 style={{ marginTop: 10 }}>{a.title}</h3><p className="mut" style={{ margin: 0 }}>{a.excerpt}</p></Link>)}{!news.length && <div className="empty">No Nganya stories yet.</div>}</div>

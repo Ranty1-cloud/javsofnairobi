@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
+import { refreshSite } from "@/lib/refresh";
 const b = z.object({ type: z.enum(["submission", "comment", "review"]), id: z.string(), action: z.enum(["approve", "reject"]) });
 export async function POST(req: Request) {
   const u = await requireRole(["SUPER_ADMIN", "ADMIN", "CONTENT_EDITOR"]);
@@ -13,5 +14,5 @@ export async function POST(req: Request) {
   else if (type === "comment") { if (action === "approve") await db.comment.update({ where: { id }, data: { approved: true } }); else await db.comment.delete({ where: { id } }); }
   else await db.submission.update({ where: { id }, data: { status: action === "approve" ? "APPROVED" : "REJECTED" } });
   await db.auditLog.create({ data: { actor: u.id, action: `moderate.${type}.${action}`, detail: { id } } });
-  return NextResponse.json({ ok: true });
+  refreshSite(); return NextResponse.json({ ok: true });
 }

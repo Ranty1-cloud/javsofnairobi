@@ -6,7 +6,7 @@ Adventure travel, road trips and Nganya culture platform. Next.js 14 (App Router
 cp .env.example .env          # set DATABASE_URL, the 3 SUPABASE vars (see Auth), CRON_SECRET, APP_URL
 npm install
 npx prisma migrate dev --name supabase_auth
-npm run db:seed               # sample data, clearly labelled "Sample"
+npm run db:seed               # adds the 14, 18 and 33 seater vehicles
 npm run admin:create -- you@example.com 'a-long-password' 'Your Name'   # first Super Admin (Supabase login + SUPER_ADMIN role)
 npm run dev
 ```
@@ -15,7 +15,7 @@ Before you push, run `npm run build` once and fix anything it reports. Fonts (In
 ## Status
 Done: trips, atomic seat holds, M-Pesa STK + Paybill + C2B, tickets/QR/scanner, WhatsApp delivery, auth + roles, admin (trips, payments, refunds, promos, moderation, analytics/CSV), waitlist, reviews, loyalty points, Nganya showcase + moderated submissions, news, destinations, gallery lightbox, newsletter, sitemap/robots/JSON-LD, premium design system, 15-section homepage, trips filters/search/sort, 3-step booking flow.
 Also done: ticket emails with PDF attached (Supabase Edge Function), PDF ticket downloads, password reset by email, analytics dashboard with charts, homepage photo manager.
-Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), image upload for trips, articles and gallery (admin forms still take image URLs; the homepage photo does have uploads), Redis (rate limits are in-memory), polls/events CMS, AI support assistant, social feeds, automated tests.
+Not built yet: card/international payments (Flutterwave/Paystack/Pesapal), Redis (rate limits are in-memory), polls/events CMS, AI-written chat answers, social feeds, automated tests.
 
 ## Auth (Supabase)
 
@@ -34,7 +34,7 @@ Setup in the Supabase dashboard:
 6. `npx prisma migrate dev --name supabase_auth` (adds `User.authId`, drops `passwordHash` and `PasswordReset`).
 7. Existing users: `npm run admin:migrate-users` links them to Supabase; they set a new password with Forgot password (old argon2 hashes cannot be moved).
 
-Staff: `npm run admin:create` makes a Super Admin. A Super Admin can invite staff with `POST /api/admin/staff` `{email, name, role}` and change roles with `PATCH /api/admin/staff` `{email, role}`.
+Staff: `npm run admin:create` makes a Super Admin. A Super Admin manages the team at `/admin/staff` (invite by email, change roles, remove access). The same actions exist as `POST` and `PATCH /api/admin/staff`.
 
 ## Cron jobs (Authorization: Bearer $CRON_SECRET)
 `/api/cron/expire` every minute · `/api/cron/notify` every 5 min (retries failed WhatsApp and email) · `/api/cron/reminders` hourly · `/api/cron/waitlist` every 5 min.
@@ -54,10 +54,12 @@ Until credentials exist, sending is skipped and tickets remain available on the 
 - `trip_reminder`: `Hi {{1}}, reminder: {{2}} departs {{3}}. Meeting point: {{4}}.` Schedule `/api/cron/reminders` hourly.
 - `trip_update`: `Hi {{1}}, an update for {{2}}: it now departs {{3}} from {{4}}.` Sent by `PATCH /api/admin/trips/:id` with `"notify": true`.
 
-## Manual M-Pesa (Paybill) and C2B auto-confirm
-Customers choose "Pay manually (Paybill)", pay MPESA_PAYBILL with their booking reference as the account number, and optionally enter the M-Pesa code. Seats stay held 2 hours.
+## M-Pesa Till payments and STK push
+Customers pay to Till **4308216** (Buy Goods and Services; override with `NEXT_PUBLIC_MPESA_TILL`) and enter the 10-character M-Pesa code on their booking page. Seats stay held 2 hours. The STK push button shows a "Coming soon" banner until `NEXT_PUBLIC_STK_ENABLED="true"` and the Daraja keys are set (the server refuses STK requests before then).
+
+Vehicles: 14-seater (7 rows of 2), 18-seater (6 rows of 3) and 33-seater bus (11 rows of 3). Each event uses the layout of the vehicle chosen when it is created.
 - Manual: staff open `/admin/payments`, compare code and exact amount with the M-Pesa statement, then Confirm.
-- Auto: register C2B URLs with Daraja (Register URL API) using `https://your-domain/api/payments/mpesa/c2b/confirmation?k=$MPESA_C2B_SECRET` and `.../c2b/validation`. Exact reference + exact amount matches confirm automatically; anything else is left in the audit log for staff.
+- Auto (Paybill only, not needed for a Till): register C2B URLs with Daraja (Register URL API) using `https://your-domain/api/payments/mpesa/c2b/confirmation?k=$MPESA_C2B_SECRET` and `.../c2b/validation`. Exact reference + exact amount matches confirm automatically; anything else is left in the audit log for staff.
 - Waitlist template `seat_available`: `Seats have opened on {{1}}. Book now: {{2}}`. Schedule `/api/cron/waitlist`.
 
 ## Email (Supabase)
@@ -78,3 +80,29 @@ PDF tickets: `/api/tickets/:token/pdf` (token is the credential) and `/api/booki
 ## Homepage photo
 `/admin/site` (Super Admin, Administrator, Content Editor): drag and drop photos, preview them behind the real headline, switch the live photo from the library, delete old ones, or go back to the automatic photo. Photos are shrunk to WebP in the browser, then uploaded straight to Supabase Storage with a one-time signed token (no 4.5 MB serverless limit).
 Setup: create a **public** Storage bucket, set `SUPABASE_BUCKET` to its name. Uploads go to `site/hero-*.{jpg,png,webp}`.
+
+## Admin screens
+| Page | Who | What |
+|---|---|---|
+| `/admin` and `/admin/analytics` | all staff (money figures: Super Admin, Admin, Finance) | Live dashboard, charts, CSV |
+| `/admin/manage` | by form | Create trips, articles, destinations, Nganya, gallery. Image fields upload straight to Supabase Storage (shrunk to WebP in the browser) or accept a pasted link |
+| `/admin/events` | Super Admin, Admin, Booking Manager | Every event in one list: tick and publish/unpublish in bulk, pin up to 6 to the homepage, edit name, date, meeting point, photo and description, delete events with no bookings |
+| `/admin/gallery` | Super Admin, Admin, Content Editor | Upload many photos at once, set category and caption, delete |
+| `/admin/site` | Super Admin, Admin, Content Editor | Homepage photo library |
+| `/admin/boarding` | Super Admin, Admin, Booking Manager, Support | Per-trip passenger list, "boarded X of Y", manual check-in and undo (auto-refreshes within 12 hours of departure) |
+| `/admin/waitlist` | Super Admin, Admin, Booking Manager, Support | Who is waiting per trip, one-tap WhatsApp or email |
+| `/admin/promos` | Super Admin, Admin, Finance | Create codes, turn on or off (codes are never deleted) |
+| `/admin/staff` | Super Admin | Invite staff, change roles |
+| `/admin/audit` | Super Admin, Admin | Searchable, paged log of who did what |
+
+All uploads need the public Storage bucket from the Homepage photo section (`SUPABASE_BUCKET`).
+
+## Support chat and WhatsApp button
+A help-chat button and a WhatsApp button float on every public page (hidden in `/admin`). Set `NEXT_PUBLIC_WHATSAPP` (country code, no plus, e.g. `2547XXXXXXXX`) for the WhatsApp button and hand-offs.
+The chat is free and uses no AI or API key. It matches the visitor's question against `src/lib/support-kb.ts` (the same list the Support page shows) and, when nothing matches, offers to continue on WhatsApp with a person. Edit that file to add policies, and only add what the business has confirmed (refund terms are still marked as to be confirmed). It cannot see bookings or payments, so it never claims a payment or booking outcome.
+Messages are not stored. Rate limit is 12 per minute per IP, in memory like the other limiters, so move it to Redis before scaling out. An AI-written answer step could be added later behind the same route.
+
+## Speed
+- `vercel.json` pins functions to Dublin (`dub1`), next to the Supabase database (`eu-west-1`). Keep them in the same region. If you move the database, change this.
+- `DATABASE_URL` on Vercel must be the Supabase **pooler** string (Transaction mode, port 6543) with `?pgbouncer=true&connection_limit=1`. `DIRECT_URL` is the direct port 5432 string.
+- Home, Destinations and Nganya pages are cached for 60 seconds. Admin saves refresh them immediately.

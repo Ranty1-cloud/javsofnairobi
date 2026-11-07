@@ -1,20 +1,26 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import SeatMap from "@/components/SeatMap";
 import SubmitForm from "@/components/SubmitForm";
 import Countdown from "@/components/Countdown";
+import ShareButtons from "@/components/ShareButtons";
 import { fmtDate, fmtTime, ksh, TYPE_LABEL, site } from "@/lib/format";
+
 import { getSession } from "@/lib/session";
 export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"; // live seat map
+const bySlug = cache((slug: string) => db.trip.findUnique({ where: { slug }, include: { destination: true, vehicle: { select: { name: true } }, seats: { orderBy: { label: "asc" } }, reviews: { where: { approved: true }, orderBy: { createdAt: "desc" } } } }));
+ main
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const t = await db.trip.findUnique({ where: { slug: params.slug }, include: { destination: true } });
+  const t = await bySlug(params.slug);
   if (!t || !t.published) return {};
   const desc = t.summary || `${t.title} to ${t.destination.name}. From ${ksh(t.priceKes)}.`;
-  return { title: t.title, description: desc, openGraph: { title: t.title, description: desc, images: t.imageUrl ? [t.imageUrl] : undefined } };
+  return { title: t.title, description: desc, openGraph: { title: t.title, description: desc }, twitter: { card: "summary_large_image" } };
 }
 export default async function TripPage({ params }: { params: { slug: string } }) {
-  const trip = await db.trip.findUnique({ where: { slug: params.slug }, include: { destination: true, seats: { orderBy: { label: "asc" } }, reviews: { where: { approved: true }, orderBy: { createdAt: "desc" } } } });
+  const trip = await bySlug(params.slug);
   if (!trip || !trip.published) notFound();
   const signedIn = !!(await getSession());
   const next = encodeURIComponent(`/trips/${trip.slug}`);
@@ -28,7 +34,7 @@ export default async function TripPage({ params }: { params: { slug: string } })
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, "\\u003c") }} />
       <section className="page-hero">{trip.imageUrl && <img src={trip.imageUrl} alt="" />}
         <div className="wrap" style={{ width: "100%", paddingBottom: 32 }}>
-          <span className="badge red">{trip.category}</span>{trip.isSample && <span className="badge" style={{ marginLeft: 6 }}>Sample trip</span>}
+          <span className="badge red">{trip.category}</span>
           <h1 className="disp">{trip.title}</h1>
           <p className="mut" style={{ margin: 0 }}><Link href={`/destinations/${trip.destination.slug}`}>{trip.destination.name}</Link> · {fmtDate(trip.departsAt)}</p>
         </div>
@@ -38,9 +44,10 @@ export default async function TripPage({ params }: { params: { slug: string } })
           <div><small>Departs</small>{fmtTime(trip.departsAt)}</div><div><small>Meeting point</small>{trip.meetingPoint}</div>
           <div><small>Type</small>{TYPE_LABEL[trip.tripType] ?? trip.tripType}{trip.durationLabel && ` · ${trip.durationLabel}`}</div>
           <div><small>From</small><span className="price">{ksh(trip.priceKes)}</span>{trip.bookingFeeKes > 0 && <span className="mut"> + {ksh(trip.bookingFeeKes)} fee</span>}</div>
-          <div><small>Seats left</small>{left}</div>
+          <div><small>Vehicle</small>{trip.vehicle.name}</div><div><small>Seats left</small>{left}</div>
           {!past && <div><small>Departs in</small><Countdown to={trip.departsAt.toISOString()} /></div>}
         </div>
+        {!past && <ShareButtons title={trip.title} line={`${fmtDate(trip.departsAt)} · ${fmtTime(trip.departsAt)} · From ${ksh(trip.priceKes)}${left > 0 ? ` · ${left} seats left` : ""}`} />}
         {trip.summary && <p className="prose" style={{ maxWidth: 760 }}>{trip.summary}</p>}
         <h2 style={{ marginTop: 32 }}>Choose your seats</h2>
         {past ? <p className="note">This trip has already departed.</p> : left > 0 && !signedIn ? <div className="card narrow"><h3>Log in to book</h3><p className="mut">You need a free account to book a seat. It keeps your tickets in one place and lets you manage or cancel your bookings.</p><div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><Link className="btn" href={`/login?next=${next}`}>Log in</Link><Link className="btn ghost" href={`/register?next=${next}`}>Create account</Link></div></div> : left > 0 ? <SeatMap tripId={trip.id} seats={seats} fee={trip.bookingFeeKes} /> : <div className="card narrow"><h3>Fully booked</h3><p className="mut">Join the waitlist and we&apos;ll message you if seats open up.</p><SubmitForm endpoint="/api/waitlist" extra={{ tripId: trip.id }} fields={["contact"]} label="Join waitlist (phone or email)" /></div>}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export const metadata = { title: "Destinations", description: "Kenyan destinations worth the drive: resorts, lakes, mountains, the coast and hidden gems." };
 export default async function D() {
   const d = await db.destination.findMany({ orderBy: { name: "asc" }, include: { _count: { select: { trips: { where: { published: true, departsAt: { gt: new Date() } } } } } } });
