@@ -85,3 +85,19 @@ export function ResetForm() {
     </form>
   );
 }
+
+// For signed-in people (customers and staff). Needs the current password, never an email.
+export function ChangePasswordForm() {
+  const [done, setDone] = useState(false), [err, setErr] = useState(""), [busy, setBusy] = useState(false);
+  async function go(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault(); setErr("");
+    const f = new FormData(e.currentTarget), pw = String(f.get("password"));
+    if (pw !== f.get("confirm")) return setErr("The two new passwords do not match");
+    setBusy(true);
+    const { ok, j } = await post("/api/auth/change-password", { current: f.get("current"), password: pw });
+    if (ok) setDone(true); else setErr(j.error ?? "Something went wrong");
+    setBusy(false);
+  }
+  if (done) return <div className="card" style={{ maxWidth: 380 }}><b>Password updated.</b><p className="mut">Other devices have been logged out. Use the new password next time you log in.</p></div>;
+  return <form onSubmit={go} style={{ maxWidth: 380 }}><input name="current" type="password" placeholder="Current password" required autoComplete="current-password" /><input name="password" type="password" placeholder="New password (10+ characters)" required minLength={10} autoComplete="new-password" /><input name="confirm" type="password" placeholder="Repeat new password" required minLength={10} autoComplete="new-password" /><button className="btn" disabled={busy}>{busy ? "Saving…" : "Change password"}</button>{err && <p role="alert" style={{ color: "#E50914" }}>{err}</p>}</form>;
+}
