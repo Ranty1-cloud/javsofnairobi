@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { TILL, STK_ENABLED } from "@/lib/pay";
+import { planSeats, type Plan } from "@/lib/layout";
 type Seat = { label: string; priceKes: number; status: string };
 const rowOf = (l: string) => l.replace(/\d+$/, ""), numOf = (l: string) => Number(l.replace(/\D/g, ""));
-export default function SeatMap({ tripId, seats, fee, signedIn, email: accountEmail, next }: { tripId: string; seats: Seat[]; fee: number; signedIn: boolean; email: string; next: string }) {
+export default function SeatMap({ tripId, seats, fee, plan, signedIn, email: accountEmail, next }: { tripId: string; seats: Seat[]; fee: number; plan?: Plan; signedIn: boolean; email: string; next: string }) {
   const [step, setStep] = useState(1);
   const [sel, setSel] = useState<string[]>([]);
   const [until, setUntil] = useState<number | null>(null);
@@ -17,11 +18,18 @@ export default function SeatMap({ tripId, seats, fee, signedIn, email: accountEm
     return [...m.values()];
   }, [seats]);
   const base = Math.min(...seats.map(s => s.priceKes));
+  // Events created before a vehicle got its plan keep the seats they were made with, so only draw the plan when it matches exactly.
+  const bySeat = useMemo(() => new Map(seats.map(s => [s.label, s])), [seats]);
+  const usePlan = !!plan && planSeats(plan).length === seats.length && planSeats(plan).every(p => bySeat.has(p.label));
   useEffect(() => {
     if (!until) return;
     const t = setInterval(() => { const s = Math.max(0, Math.round((until - Date.now()) / 1000)); setLeft(s); if (!s) { setSel([]); setUntil(null); setStep(1); setMsg("Your seat hold expired. Please pick your seats again."); } }, 1000);
     return () => clearInterval(t);
   }, [until]);
+  const seatBtn = (s: Seat) => {
+    const mine = sel.includes(s.label), cls = mine ? "sel" : s.status === "BOOKED" ? "taken" : s.status === "RESERVED" ? "hold" : "";
+    return <button key={s.label} className={`seat ${cls} ${s.priceKes > base ? "prem" : ""}`} disabled={!signedIn || (!mine && s.status !== "AVAILABLE")} aria-pressed={mine} aria-label={`Seat ${s.label}, ${s.priceKes} shillings, ${mine ? "selected" : s.status === "AVAILABLE" ? "available" : "unavailable"}`} onClick={() => toggle(s)}>{s.label}</button>;
+  };
   const chosen = seats.filter(s => sel.includes(s.label));
   const subtotal = chosen.reduce((a, s) => a + s.priceKes, 0), sum = subtotal + (sel.length ? fee : 0);
   async function toggle(s: Seat) {
@@ -53,10 +61,17 @@ export default function SeatMap({ tripId, seats, fee, signedIn, email: accountEm
         {msg && <p className="note" role="status">{msg}</p>}
         {step === 1 && <>
           <div className="bus"><div className="bus-front">FRONT · DRIVER</div>
-            {rows.map(r => <div key={rowOf(r[0].label)} className="srow">{r.map((s, i) => {
-              const mine = sel.includes(s.label), cls = mine ? "sel" : s.status === "BOOKED" ? "taken" : s.status === "RESERVED" ? "hold" : "";
-              return <span key={s.label} style={{ display: "contents" }}>{i === Math.ceil(r.length / 2) && <span className="aisle" />}<button className={`seat ${cls} ${s.priceKes > base ? "prem" : ""}`} disabled={!signedIn || (!mine && s.status !== "AVAILABLE")} aria-pressed={mine} aria-label={`Seat ${s.label}, ${s.priceKes} shillings, ${mine ? "selected" : s.status === "AVAILABLE" ? "available" : "unavailable"}`} onClick={() => toggle(s)}>{s.label}</button></span>;
-            })}</div>)}
+            {usePlan ? plan!.map(r => { let col = 0; return <div key={r.row} className="srow">{[...r.cells].map((ch, k) => {
+              if (ch === "|") return <span key={k} className="aisle" />;
+              col++;
+              const s = ch === "S" ? bySeat.get(`${r.row}${col}`) : undefined;
+              if (s) return seatBtn(s);
+              return ch === "D" ? <span key={k} className="seat drv" aria-label="Driver" title="Driver">🛞</span> : <span key={k} className="seat gap" aria-hidden="true" />;
+            })}</div>; }) : (
+            rows.map(r => <div key={rowOf(r[0].label)} className="srow">{r.map((s, i) => {
+              return <span key={s.label} style={{ display: "contents" }}>{i === Math.ceil(r.length / 2) && <span className="aisle" />}{seatBtn(s)}</span>;
+            })}</div>)
+            )}
           </div>
           <div className="legend"><span><i style={{ background: "var(--elev)" }} />Available</span><span><i style={{ background: "var(--red)" }} />Selected</span><span><i style={{ background: "#2a2a2a" }} />Taken</span><span><i style={{ borderColor: "var(--amber)" }} />Held by someone</span><span><span style={{ color: "var(--amber)" }}>★</span> Premium</span></div>
         </>}

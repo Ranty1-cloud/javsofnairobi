@@ -151,6 +151,7 @@ model Payment {
   provider       String
   idempotencyKey String        @unique
   providerRef    String?       @unique
+  payerName      String?
   amountKes      Int
   status         PaymentStatus @default(INITIATED)
   rawCallback    Json?
