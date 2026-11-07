@@ -6,11 +6,12 @@ import NewsletterForm from "@/components/NewsletterForm";
 import { toCard, upcomingTrips, liveArticles, tripInclude } from "@/lib/queries";
 import { readFeatured } from "@/lib/featured";
 import { fmtDateTime } from "@/lib/format";
-export const dynamic = "force-dynamic";
+// Cached for 60s and refreshed instantly when an admin saves a change (see lib/refresh.ts). Seat counts are re-checked at booking time.
+export const revalidate = 60;
 const wa = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 const Head = ({ t, href, more }: { t: string; href?: string; more?: string }) => <div className="sec-head"><h2>{t}</h2>{href && <Link href={href}>{more ?? "View all"} →</Link>}</div>;
 export default async function Home() {
-  const [trips, news, nganya, dests, gallery, reviews, seatsBooked, tripCount, destCount, storyCount] = await Promise.all([
+  const [trips, news, nganya, dests, gallery, reviews, seatsBooked, tripCount, destCount, storyCount, heroSetting, pinnedIds] = await Promise.all([
     upcomingTrips(6),
     db.article.findMany({ where: liveArticles(), orderBy: { publishedAt: "desc" }, take: 3 }),
     db.nganyaProfile.findMany({ orderBy: { createdAt: "desc" }, take: 3 }),
@@ -18,9 +19,9 @@ export default async function Home() {
     db.galleryMedia.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
     db.review.findMany({ where: { approved: true }, orderBy: { createdAt: "desc" }, take: 3 }),
     db.ticket.count(), db.trip.count({ where: { published: true, departsAt: { gt: new Date() } } }), db.destination.count(), db.article.count({ where: liveArticles() }),
+    db.siteSetting.findUnique({ where: { key: "heroImage" } }),
+    readFeatured(),
   ]);
-  const heroSetting = await db.siteSetting.findUnique({ where: { key: "heroImage" } });
-  const pinnedIds = await readFeatured();
   const pinned = pinnedIds.length ? await db.trip.findMany({ where: { id: { in: pinnedIds }, published: true, departsAt: { gt: new Date() } }, include: tripInclude }) : [];
   const ordered = pinnedIds.map(id => pinned.find(x => x.id === id)).filter((x): x is (typeof pinned)[number] => !!x);
   const shown = [...ordered, ...trips.filter(t => !pinnedIds.includes(t.id))].slice(0, 6);

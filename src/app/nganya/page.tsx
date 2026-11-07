@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import SubmitForm from "@/components/SubmitForm";
 import TripCard from "@/components/TripCard";
 import { toCard, tripInclude, liveArticles } from "@/lib/queries";
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export const metadata = { title: "Nganya Culture", description: "Kenyan matatu culture: news, showcases, events and community stories." };
 export default async function Nganya() {
   const [profiles, news, trips] = await Promise.all([

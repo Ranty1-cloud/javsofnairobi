@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { FEATURED_MAX, readFeatured, saveFeatured } from "@/lib/featured";
+import { refreshSite } from "@/lib/refresh";
 
 // Pin an event to the top of the homepage (the first pinned upcoming event also becomes the big "Next adventure" card).
 export async function POST(req: Request) {
@@ -20,5 +21,5 @@ export async function POST(req: Request) {
   }
   await saveFeatured(list);
   await db.auditLog.create({ data: { actor: u.id, action: p.data.pinned ? "trip.pin" : "trip.unpin", detail: { id: p.data.id } } });
-  return NextResponse.json({ ok: true, featured: list });
+  refreshSite(); return NextResponse.json({ ok: true, featured: list });
 }

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -5,15 +6,16 @@ import SeatMap from "@/components/SeatMap";
 import SubmitForm from "@/components/SubmitForm";
 import Countdown from "@/components/Countdown";
 import { fmtDate, fmtTime, ksh, TYPE_LABEL, site } from "@/lib/format";
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"; // live seat map
+const bySlug = cache((slug: string) => db.trip.findUnique({ where: { slug }, include: { destination: true, seats: { orderBy: { label: "asc" } }, reviews: { where: { approved: true }, orderBy: { createdAt: "desc" } } } }));
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const t = await db.trip.findUnique({ where: { slug: params.slug }, include: { destination: true } });
+  const t = await bySlug(params.slug);
   if (!t || !t.published) return {};
   const desc = t.summary || `${t.title} to ${t.destination.name}. From ${ksh(t.priceKes)}.`;
   return { title: t.title, description: desc, openGraph: { title: t.title, description: desc, images: t.imageUrl ? [t.imageUrl] : undefined } };
 }
 export default async function TripPage({ params }: { params: { slug: string } }) {
-  const trip = await db.trip.findUnique({ where: { slug: params.slug }, include: { destination: true, seats: { orderBy: { label: "asc" } }, reviews: { where: { approved: true }, orderBy: { createdAt: "desc" } } } });
+  const trip = await bySlug(params.slug);
   if (!trip || !trip.published) notFound();
   const now = new Date();
   const seats = trip.seats.map(s => ({ label: s.label, priceKes: s.priceKes, status: s.status === "RESERVED" && s.heldUntil && s.heldUntil < now && !s.bookingId ? "AVAILABLE" : s.status }));

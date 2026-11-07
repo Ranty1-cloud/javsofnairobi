@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { readFeatured, saveFeatured } from "@/lib/featured";
+import { refreshSite } from "@/lib/refresh";
 
 const ROLES = ["SUPER_ADMIN", "ADMIN", "BOOKING_MANAGER"] as const;
 
@@ -20,7 +21,7 @@ export async function PATCH(req: Request) {
     await saveFeatured(keep);
   }
   await db.auditLog.create({ data: { actor: u.id, action: p.data.published ? "trip.publish" : "trip.unpublish", detail: { ids: p.data.ids, count: r.count } } });
-  return NextResponse.json({ ok: true, count: r.count });
+  refreshSite(); return NextResponse.json({ ok: true, count: r.count });
 }
 
 // Delete an event that has never had a booking. Anything with bookings must be unpublished instead, so customer records stay intact.
@@ -35,5 +36,5 @@ export async function DELETE(req: Request) {
   await db.$transaction([db.tripSeat.deleteMany({ where: { tripId: id } }), db.waitlist.deleteMany({ where: { tripId: id } }), db.trip.delete({ where: { id } })]);
   await saveFeatured((await readFeatured()).filter(x => x !== id));
   await db.auditLog.create({ data: { actor: u.id, action: "trip.delete", detail: { id, title: trip.title } } });
-  return NextResponse.json({ ok: true });
+  refreshSite(); return NextResponse.json({ ok: true });
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
+import { refreshSite } from "@/lib/refresh";
 const b = z.discriminatedUnion("type", [
   z.object({ type: z.literal("article"), slug: z.string().regex(/^[a-z0-9-]+$/), title: z.string(), category: z.string(), excerpt: z.string().default(""), body: z.string(), coverUrl: z.string().url().optional(), author: z.string().max(80).optional(), publishedAt: z.coerce.date().optional() }),
   z.object({ type: z.literal("nganya"), name: z.string(), crew: z.string().optional(), bio: z.string(), imageUrl: z.string().url().optional() }),
@@ -19,5 +20,5 @@ export async function POST(req: Request) {
     : d.type === "gallery" ? await db.galleryMedia.create({ data: { ...d, type: undefined } as never })
     : await db.destination.create({ data: { ...d, type: undefined } as never });
   await db.auditLog.create({ data: { actor: u.id, action: `content.${d.type}.create` } });
-  return NextResponse.json(row, { status: 201 });
+  refreshSite(); return NextResponse.json(row, { status: 201 });
 }
