@@ -25,7 +25,7 @@ export default async function TripPage({ params }: { params: { slug: string } })
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, "\\u003c") }} />
       <section className="page-hero">{trip.imageUrl && <img src={trip.imageUrl} alt="" />}
         <div className="wrap" style={{ width: "100%", paddingBottom: 32 }}>
-          <span className="badge red">{trip.category}</span>{trip.isSample && <span className="badge" style={{ marginLeft: 6 }}>Sample trip</span>}
+          <span className="badge red">{trip.category}</span>
           <h1 className="disp">{trip.title}</h1>
           <p className="mut" style={{ margin: 0 }}><Link href={`/destinations/${trip.destination.slug}`}>{trip.destination.name}</Link> · {fmtDate(trip.departsAt)}</p>
         </div>

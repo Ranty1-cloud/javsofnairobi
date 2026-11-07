@@ -7,7 +7,7 @@ export default function TripCard({ t }: { t: CardTrip }) {
     <article className="tcard">
       <Link href={`/trips/${t.slug}`} className="tcard-img" aria-label={t.title}>
         {t.imageUrl ? <img src={t.imageUrl} alt="" loading="lazy" /> : <div className="tcard-ph">{t.title}</div>}
-        <div className="tcard-badges"><span className="badge red">{t.category}</span>{t.isSample && <span className="badge">Sample</span>}{soldOut ? <span className="badge amber">Sold out · waitlist</span> : few && <span className="badge amber">Only {t.left} left</span>}</div>
+        <div className="tcard-badges"><span className="badge red">{t.category}</span>{soldOut ? <span className="badge amber">Sold out · waitlist</span> : few && <span className="badge amber">Only {t.left} left</span>}</div>
       </Link>
       <div className="tcard-body">
         <h3><Link href={`/trips/${t.slug}`}>{t.title}</Link></h3>

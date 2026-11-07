@@ -15,10 +15,12 @@ const ICON: Record<string, string> = {
   list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
   clock: "M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2",
   log: "M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7",
+  calendar: "M3 5h18v16H3zM3 10h18M8 3v4M16 3v4",
+  photos: "M4 4h16v16H4zM8 15l3-3 4 4 2-2 3 3M8.5 8.5h.01",
 };
 const GROUPS: { title: string; links: [href: string, label: string, icon: keyof typeof ICON][] }[] = [
   { title: "Overview", links: [["/admin", "Dashboard", "grid"], ["/admin/analytics", "Analytics", "chart"]] },
-  { title: "Content", links: [["/admin/manage", "Trips & content", "route"], ["/admin/site", "Homepage photo", "image"]] },
+  { title: "Content", links: [["/admin/events", "Events", "calendar"], ["/admin/gallery", "Gallery", "photos"], ["/admin/manage", "Create content", "route"], ["/admin/site", "Homepage photo", "image"]] },
   { title: "Operations", links: [["/admin/payments", "Payments", "card"], ["/admin/moderation", "Moderation", "shield"], ["/admin/scan", "Scan tickets", "scan"], ["/admin/boarding", "Boarding lists", "list"], ["/admin/waitlist", "Waitlists", "clock"]] },
   { title: "Growth & access", links: [["/admin/promos", "Promo codes", "tag"], ["/admin/staff", "Staff & roles", "users"], ["/admin/audit", "Audit log", "log"]] },
 ];
