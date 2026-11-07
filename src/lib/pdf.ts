@@ -2,10 +2,10 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { db } from "./db";
 import { fmtDate, fmtTime } from "./format";
 import { qrLayout, QUIET } from "./ticket-qr";
-export type TicketData = { token: string; passenger: string; seat: string; reference: string; title: string; departsAt: Date; meetingPoint: string; paid: boolean };
-const include = { seat: true, booking: { include: { trip: true, payments: true } } } as const;
-const shape = (t: { token: string; passengerName: string; seat: { label: string }; booking: { reference: string; payments: { status: string }[]; trip: { title: string; departsAt: Date; meetingPoint: string } } }): TicketData => ({
-  token: t.token, passenger: t.passengerName, seat: t.seat.label, reference: t.booking.reference, title: t.booking.trip.title, departsAt: t.booking.trip.departsAt, meetingPoint: t.booking.trip.meetingPoint, paid: t.booking.payments.some(p => p.status === "SUCCESS"),
+export type TicketData = { token: string; passenger: string; seat: string; vehicle: string; reference: string; title: string; departsAt: Date; meetingPoint: string; paid: boolean };
+const include = { seat: { include: { tripVehicle: { select: { name: true } } } }, booking: { include: { trip: true, payments: true } } } as const;
+const shape = (t: { token: string; passengerName: string; seat: { label: string; tripVehicle?: { name: string } | null }; booking: { reference: string; payments: { status: string }[]; trip: { title: string; departsAt: Date; meetingPoint: string } } }): TicketData => ({
+  token: t.token, passenger: t.passengerName, seat: t.seat.label, vehicle: t.seat.tripVehicle?.name ?? "", reference: t.booking.reference, title: t.booking.trip.title, departsAt: t.booking.trip.departsAt, meetingPoint: t.booking.trip.meetingPoint, paid: t.booking.payments.some(p => p.status === "SUCCESS"),
 });
 // Only CONFIRMED bookings produce tickets. Refunded, cancelled or expired bookings return nothing, same rule as the scanner.
 export async function ticketByToken(token: string) {
@@ -13,7 +13,7 @@ export async function ticketByToken(token: string) {
   return t && t.booking.status === "CONFIRMED" ? { data: shape(t), reference: t.booking.reference } : null;
 }
 export async function ticketsForBooking(bookingId: string) {
-  const b = await db.booking.findUnique({ where: { id: bookingId }, include: { tickets: { include: { seat: true }, orderBy: { createdAt: "asc" } }, trip: true, payments: true } });
+  const b = await db.booking.findUnique({ where: { id: bookingId }, include: { tickets: { include: { seat: { include: { tripVehicle: { select: { name: true } } } } }, orderBy: { createdAt: "asc" } }, trip: true, payments: true } });
   if (!b || b.status !== "CONFIRMED" || !b.tickets.length) return null;
   return { reference: b.reference, userId: b.userId, data: b.tickets.map(t => shape({ ...t, booking: b })) };
 }
@@ -45,7 +45,9 @@ export async function renderTicketsPdf(tickets: TicketData[]) {
     y -= 10;
     cell("Date", fmtDate(t.departsAt), 24, y); cell("Departs", fmtTime(t.departsAt), 210, y); y -= 44;
     p.drawText("MEETING POINT", { x: 24, y, size: 7.5, font: reg, color: grey }); p.drawText(safe(t.meetingPoint).slice(0, 48), { x: 24, y: y - 15, size: 12, font: bold, color: ink }); y -= 44;
-    cell("Passenger", t.passenger, 24, y); cell("Seat", t.seat, 210, y, 20); y -= 44;
+    cell("Passenger", t.passenger, 24, y); cell("Seat", t.seat, 210, y, 20);
+    if (t.vehicle) p.drawText(safe(t.vehicle).slice(0, 24), { x: 210, y: y - 33, size: 7.5, font: reg, color: grey });
+    y -= 44;
     cell("Booking ref", t.reference, 24, y); cell("Ticket code", shortCode(t.token), 210, y); y -= 30;
     // Perforation line with notches.
     p.drawLine({ start: { x: 22, y }, end: { x: W - 22, y }, thickness: 1, color: line, dashArray: [4, 4] });

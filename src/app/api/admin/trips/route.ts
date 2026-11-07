@@ -5,7 +5,7 @@ import { requireRole } from "@/lib/session";
 import { refreshSite } from "@/lib/refresh";
 import { isCounty } from "@/lib/kenya";
 import { resolveDestination, uniqueSlug } from "@/lib/destinations";
-import { layoutSeats, type Layout } from "@/lib/layout";
+import { addVehicleToTrip } from "@/lib/trip-vehicles";
 const body = z.object({ title: z.string().min(3).max(120), category: z.string().min(2).max(60), county: z.string().refine(isCounty, "Choose a county"), town: z.string().max(80).default(""), vehicleId: z.string(), departsAt: z.coerce.date(), meetingPoint: z.string().min(2).max(160), priceKes: z.number().int().positive(), premiumPriceKes: z.number().int().positive().optional(), bookingFeeKes: z.number().int().min(0).default(0), published: z.boolean().default(false), imageUrl: z.string().url().optional(), summary: z.string().max(600).optional(), tripType: z.enum(["DAY", "OVERNIGHT", "WEEKEND"]).default("DAY"), durationLabel: z.string().max(60).optional() });
 export async function POST(req: Request) {
   const admin = await requireRole(["SUPER_ADMIN", "ADMIN", "BOOKING_MANAGER"]);
@@ -15,10 +15,9 @@ export async function POST(req: Request) {
   const { premiumPriceKes, county, town, ...data } = p.data;
   const veh = await db.vehicle.findUnique({ where: { id: data.vehicleId } });
   if (!veh) return NextResponse.json({ error: "Unknown vehicle" }, { status: 400 });
-  const seatList = layoutSeats(veh.layout as unknown as Layout);
   const [destinationId, slug] = await Promise.all([resolveDestination(county, town), uniqueSlug(data.title, async s => !!(await db.trip.findUnique({ where: { slug: s }, select: { id: true } })))]);
   const trip = await db.trip.create({ data: { ...data, slug, destinationId, isSample: false } });
-  await db.tripSeat.createMany({ data: seatList.map(s => ({ tripId: trip.id, label: s.label, priceKes: s.rowIndex === 0 && premiumPriceKes ? premiumPriceKes : data.priceKes })) });
+  await addVehicleToTrip(trip.id, data.vehicleId, { priceKes: data.priceKes, premiumPriceKes }); // first vehicle and its seats
   await db.auditLog.create({ data: { actor: admin.id, action: "trip.create", detail: { tripId: trip.id } } });
   refreshSite(); return NextResponse.json(trip, { status: 201 });
 }

@@ -24,7 +24,7 @@ const css = `
   .tk-top{background:#0a0a0a!important;color:#fff}.tk-top .tk-sub{color:#bbb}.tk-perf:before,.tk-perf:after{background:#fff}
 }`;
 export default async function TicketPage({ params }: { params: { token: string } }) {
-  const t = await db.ticket.findUnique({ where: { token: params.token }, include: { seat: true, booking: { include: { trip: true, payments: true } } } });
+  const t = await db.ticket.findUnique({ where: { token: params.token }, include: { seat: { include: { tripVehicle: { select: { name: true } } } }, booking: { include: { trip: true, payments: true } } } });
   if (!t || t.booking.status !== "CONFIRMED") notFound();
   const svg = qrSvg(t.token); // carries only the opaque token, never passenger data
   const trip = t.booking.trip, paid = t.booking.payments.some(p => p.status === "SUCCESS");
@@ -41,6 +41,7 @@ export default async function TicketPage({ params }: { params: { token: string }
           <div className="tk-grid">
             <div><small>Date</small><b>{fmtDate(trip.departsAt)}</b></div><div><small>Departs</small><b>{fmtTime(trip.departsAt)}</b></div>
             <div className="tk-wide"><small>Meeting point</small><b>{trip.meetingPoint}</b></div>
+            {t.seat.tripVehicle?.name && <div className="tk-wide"><small>Vehicle</small><b>{t.seat.tripVehicle.name}</b></div>}
             <div><small>Passenger</small><b>{t.passengerName}</b></div><div><small>Seat</small><b className="tk-seat">{t.seat.label}</b></div>
             <div><small>Booking ref</small><b>{t.booking.reference}</b></div><div><small>Ticket code</small><b style={{ fontFamily: "ui-monospace,Menlo,monospace", letterSpacing: ".12em" }}>{t.token.slice(0, 8).toUpperCase()}</b></div>
           </div>

@@ -3,8 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import { TILL, STK_ENABLED } from "@/lib/pay";
 import { planSeats, type Plan } from "@/lib/layout";
 type Seat = { label: string; priceKes: number; status: string };
-const rowOf = (l: string) => l.replace(/\d+$/, ""), numOf = (l: string) => Number(l.replace(/\D/g, ""));
-export default function SeatMap({ tripId, seats, fee, plan, signedIn, email: accountEmail, next }: { tripId: string; seats: Seat[]; fee: number; plan?: Plan; signedIn: boolean; email: string; next: string }) {
+// One entry per vehicle on the event. Labels of later vehicles carry a prefix (2-A1) so every seat label is unique for the event.
+export type Group = { id: string; name: string; prefix: string; plan?: Plan; seats: Seat[] };
+const rowOf = (l: string) => l.replace(/\d+$/, ""), numOf = (l: string) => Number(l.match(/(\d+)$/)?.[1] ?? 0);
+export default function SeatMap({ tripId, groups, fee, signedIn, email: accountEmail, next }: { tripId: string; groups: Group[]; fee: number; signedIn: boolean; email: string; next: string }) {
+  const [active, setActive] = useState(0);
+  const g = groups[active] ?? groups[0], seats = g.seats, plan = g.plan;
+  const allSeats = useMemo(() => groups.flatMap(x => x.seats), [groups]);
   const [step, setStep] = useState(1);
   const [sel, setSel] = useState<string[]>([]);
   const [until, setUntil] = useState<number | null>(null);
@@ -17,10 +22,10 @@ export default function SeatMap({ tripId, seats, fee, plan, signedIn, email: acc
     [...seats].sort((a, b) => rowOf(a.label).localeCompare(rowOf(b.label)) || numOf(a.label) - numOf(b.label)).forEach(s => m.set(rowOf(s.label), [...(m.get(rowOf(s.label)) ?? []), s]));
     return [...m.values()];
   }, [seats]);
-  const base = Math.min(...seats.map(s => s.priceKes));
+  const base = Math.min(...allSeats.map(s => s.priceKes));
   // Events created before a vehicle got its plan keep the seats they were made with, so only draw the plan when it matches exactly.
   const bySeat = useMemo(() => new Map(seats.map(s => [s.label, s])), [seats]);
-  const usePlan = !!plan && planSeats(plan).length === seats.length && planSeats(plan).every(p => bySeat.has(p.label));
+  const usePlan = !!plan && planSeats(plan).length === seats.length && planSeats(plan).every(p => bySeat.has(g.prefix + p.label));
   useEffect(() => {
     if (!until) return;
     const t = setInterval(() => { const s = Math.max(0, Math.round((until - Date.now()) / 1000)); setLeft(s); if (!s) { setSel([]); setUntil(null); setStep(1); setMsg("Your seat hold expired. Please pick your seats again."); } }, 1000);
@@ -28,9 +33,9 @@ export default function SeatMap({ tripId, seats, fee, plan, signedIn, email: acc
   }, [until]);
   const seatBtn = (s: Seat) => {
     const mine = sel.includes(s.label), cls = mine ? "sel" : s.status === "BOOKED" ? "taken" : s.status === "RESERVED" ? "hold" : "";
-    return <button key={s.label} className={`seat ${cls} ${s.priceKes > base ? "prem" : ""}`} disabled={!signedIn || (!mine && s.status !== "AVAILABLE")} aria-pressed={mine} aria-label={`Seat ${s.label}, ${s.priceKes} shillings, ${mine ? "selected" : s.status === "AVAILABLE" ? "available" : "unavailable"}`} onClick={() => toggle(s)}>{s.label}</button>;
+    return <button key={s.label} className={`seat ${cls} ${s.priceKes > base ? "prem" : ""}`} disabled={!signedIn || (!mine && s.status !== "AVAILABLE")} aria-pressed={mine} aria-label={`Seat ${s.label}, ${s.priceKes} shillings, ${mine ? "selected" : s.status === "AVAILABLE" ? "available" : "unavailable"}`} onClick={() => toggle(s)}>{s.label.slice(g.prefix.length)}</button>;
   };
-  const chosen = seats.filter(s => sel.includes(s.label));
+  const chosen = allSeats.filter(s => sel.includes(s.label));
   const subtotal = chosen.reduce((a, s) => a + s.priceKes, 0), sum = subtotal + (sel.length ? fee : 0);
   async function toggle(s: Seat) {
     if (!signedIn) return;
@@ -60,11 +65,15 @@ export default function SeatMap({ tripId, seats, fee, plan, signedIn, email: acc
         {until && <div className="hold-timer" role="timer">Seats held for you: <b>{mm}</b></div>}
         {msg && <p className="note" role="status">{msg}</p>}
         {step === 1 && <>
-          <div className="bus"><div className="bus-front">FRONT · DRIVER</div>
+          {groups.length > 1 && <>
+            <div className="vtabs" role="tablist" aria-label="Choose your vehicle">{groups.map((x, i) => { const free = x.seats.filter(s => s.status === "AVAILABLE").length; return <button key={x.id} type="button" role="tab" aria-selected={i === active} className={i === active ? "on" : ""} disabled={sel.length > 0 && i !== active} onClick={() => setActive(i)}>{x.name}<small>{free} seat{free === 1 ? "" : "s"} left</small></button>; })}</div>
+            {sel.length > 0 && <p className="note" style={{ marginTop: 0 }}>All seats in one booking must be in the same vehicle. Remove your seats to switch vehicle.</p>}
+          </>}
+          <div className="bus"><div className="bus-front">{groups.length > 1 ? `${g.name.toUpperCase()} · ` : ""}FRONT · DRIVER</div>
             {usePlan ? plan!.map(r => { let col = 0; return <div key={r.row} className="srow">{[...r.cells].map((ch, k) => {
               if (ch === "|") return <span key={k} className="aisle" />;
               col++;
-              const s = ch === "S" ? bySeat.get(`${r.row}${col}`) : undefined;
+              const s = ch === "S" ? bySeat.get(`${g.prefix}${r.row}${col}`) : undefined;
               if (s) return seatBtn(s);
               return ch === "D" ? <span key={k} className="seat drv" aria-label="Driver" title="Driver">🛞</span> : <span key={k} className="seat gap" aria-hidden="true" />;
             })}</div>; }) : (
@@ -104,6 +113,7 @@ export default function SeatMap({ tripId, seats, fee, plan, signedIn, email: acc
       <aside className="card summary" aria-label="Booking summary">
         <h3>Your booking</h3>
         <dl>
+          {groups.length > 1 && <div><dt>Vehicle</dt><dd>{g.name}</dd></div>}
           <div><dt>Seats</dt><dd>{sel.length ? sel.join(", ") : "None yet"}</dd></div>
           <div><dt>Tickets</dt><dd>KSh {subtotal.toLocaleString()}</dd></div>
           <div><dt>Booking fee</dt><dd>KSh {(sel.length ? fee : 0).toLocaleString()}</dd></div>
