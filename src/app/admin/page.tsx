@@ -49,7 +49,7 @@ export default async function Admin({ searchParams }: { searchParams: { range?: 
         </div>
         <div className="adm-tools">
           <div className="pills" role="group" aria-label="Date range">{RANGES.map(r => <Link key={r} href={`/admin?range=${r}`} className={r === days ? "on" : ""} aria-current={r === days ? "true" : undefined}>{r}d</Link>)}</div>
-          <Link href="/admin/manage" className="btn sm">+ New trip</Link>
+          <Link href="/admin/events/new" className="btn sm">+ New event</Link>
         </div>
       </header>
 
@@ -77,7 +77,7 @@ export default async function Admin({ searchParams }: { searchParams: { range?: 
       </div>
 
       <div className="adm-grid g-1-1">
-        <section className="panel"><div className="panel-head"><h2>Upcoming trips · seats</h2><Link href="/admin/manage" className="mut">Manage →</Link></div>
+        <section className="panel"><div className="panel-head"><h2>Upcoming trips · seats</h2><Link href="/admin/events" className="mut">Manage →</Link></div>
           {s.occupancy.length ? <ul className="occ">{s.occupancy.map(t => <li key={t.id}><div className="hb-top"><Link href={`/trips/${t.slug}`}>{t.title}</Link><b>{t.booked}/{t.total}</b></div><Meter pct={t.pct} held={t.total ? Math.round((t.held / t.total) * 100) : 0} label={t.title} /><small className="mut">{fmtDateTime(t.departsAt)}{t.held ? ` · ${t.held} on hold` : ""}</small></li>)}</ul> : <p className="mut">No published upcoming trips. Create one from Trips & content.</p>}
         </section>
         <section className="panel"><div className="panel-head"><h2>Top trips</h2><span className="mut">{money ? "By revenue" : "By bookings"}</span></div>

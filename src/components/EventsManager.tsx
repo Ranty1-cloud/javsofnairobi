@@ -2,11 +2,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageField from "./ImageField";
+import PlaceFields from "./PlaceFields";
 
 export type EventRow = {
   id: string; slug: string; title: string; category: string; tripType: string; durationLabel: string; summary: string;
   imageUrl: string | null; departsAt: string; meetingPoint: string; priceKes: number; published: boolean; placeholder: boolean;
-  destination: string; booked: number; seats: number; bookings: number; pinned: boolean;
+  destination: string; county: string; town: string; booked: number; seats: number; bookings: number; pinned: boolean;
 };
 type Msg = { ok: boolean; text: string } | null;
 type Reply = { error?: unknown; notified?: number };
@@ -32,6 +33,8 @@ function Editor({ e, onDone }: { e: EventRow; onDone: (m: Msg) => void }) {
     put("meetingPoint", f.get("meetingPoint"), e.meetingPoint); put("imageUrl", f.get("imageUrl"), e.imageUrl ?? "");
     const dur = String(f.get("durationLabel") ?? "").trim(); if (dur !== e.durationLabel) body.durationLabel = dur;
     const sum = String(f.get("summary") ?? "").trim(); if (sum !== e.summary) body.summary = sum;
+    const cty = String(f.get("county") ?? ""), twn = String(f.get("town") ?? "").trim();
+    if (cty && (cty !== e.county || twn !== e.town)) { body.county = cty; body.town = twn; }
     const dep = String(f.get("departsAt") ?? ""); if (dep && dep !== toInput(e.departsAt)) body.departsAt = fromInput(dep);
     if (!Object.keys(body).length) return onDone({ ok: true, text: "Nothing changed." });
     body.notify = f.get("notify") === "on";
@@ -43,7 +46,9 @@ function Editor({ e, onDone }: { e: EventRow; onDone: (m: Msg) => void }) {
   return (
     <form onSubmit={save} className="ev-edit stack">
       <div className="ev-cols">
-        <div className="stack"><label>Name</label><input name="title" defaultValue={e.title} required minLength={3} maxLength={120} />
+        <div className="stack"><PlaceFields county={e.county} town={e.town} required={false} />
+          {!e.county && <p className="note" style={{ margin: 0 }}>This event has no county yet. Choose one so it shows the right place.</p>}
+          <label>Name</label><input name="title" defaultValue={e.title} required minLength={3} maxLength={120} />
           <label>Category</label><input name="category" defaultValue={e.category} required minLength={2} maxLength={60} placeholder="e.g. Road trip, Nganya event, Resort" />
           <label>Trip type</label><select name="tripType" defaultValue={e.tripType}><option value="DAY">Day trip</option><option value="OVERNIGHT">Overnight</option><option value="WEEKEND">Weekend</option></select>
           <label>Duration</label><input name="durationLabel" defaultValue={e.durationLabel} maxLength={60} placeholder="e.g. 1 day, 2 days" /></div>
@@ -135,7 +140,7 @@ export default function EventsManager({ rows }: { rows: EventRow[] }) {
           </li>
         ); })}
       </ul>
-      {!shown.length && <p className="mut" style={{ margin: 0 }}>{rows.length ? "No events in this view." : "No events yet. Create one from Create content."}</p>}
+      {!shown.length && <p className="mut" style={{ margin: 0 }}>{rows.length ? "No events in this view." : "No events yet. Create your first one with New event."}</p>}
     </section>
   );
 }
