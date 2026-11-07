@@ -17,7 +17,7 @@ export default async function Booking({ params }: { params: { id: string } }) {
       <p>{b.trip.title} · {b.trip.departsAt.toLocaleString("en-KE")}</p>
       <p>Seats: {b.seats.map(s => s.label).join(", ") || "released"} · Total <b>KSh {b.totalKes.toLocaleString()}</b></p>
       <div className="card"><b>{pay?.status === "FAILED" ? "Payment failed or was cancelled. Please try again." : msg[b.status]}</b></div>
-      {b.status === "PENDING" && pay?.provider === "mpesa_manual" && pay.status === "PENDING" && <ManualPay id={b.id} till={TILL} reference={b.reference} amount={pay.amountKes} submitted={pay.providerRef} />}
+      {b.status === "PENDING" && pay?.provider === "mpesa_manual" && pay.status === "PENDING" && <ManualPay id={b.id} till={TILL} reference={b.reference} amount={pay.amountKes} submitted={pay.providerRef} payerName={pay.payerName} />}
       {b.status === "CONFIRMED" && <><h3>Your tickets</h3>{b.tickets.map(t => <p key={t.id}><Link className="btn" href={`/ticket/${t.token}`}>{t.passengerName}</Link> <a className="mut" href={`/ticket/${t.token}?print=1`}>Print</a> · <a className="mut" href={`/api/tickets/${t.token}/pdf`}>PDF</a></p>)}{!b.tickets.length && <p className="mut">Generating tickets...</p>}</>}
       {(b.status !== "CONFIRMED") && <p><Link href={`/trips/${b.trip.slug}`} className="btn">Back to seats</Link></p>}
     </main>
