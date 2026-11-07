@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   if (!p.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   const pay = await db.payment.findUnique({ where: { id: p.data.paymentId } });
   if (!pay || pay.provider !== "mpesa_manual" || pay.status !== "PENDING") return NextResponse.json({ error: "Not a pending manual payment" }, { status: 409 });
-  await db.auditLog.create({ data: { actor: u.id, action: `manual.${p.data.action}`, detail: { paymentId: pay.id, code: pay.providerRef } } });
+  await db.auditLog.create({ data: { actor: u.id, action: `manual.${p.data.action}`, detail: { paymentId: pay.id, code: pay.providerRef, payerName: pay.payerName } } });
   if (p.data.action === "reject") { await db.payment.update({ where: { id: pay.id }, data: { status: "FAILED" } }); return NextResponse.json({ ok: true }); }
   return NextResponse.json({ result: await confirmPayment(pay.id) });
 }
