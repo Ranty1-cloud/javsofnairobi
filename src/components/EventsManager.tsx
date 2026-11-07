@@ -3,11 +3,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageField from "./ImageField";
 import PlaceFields from "./PlaceFields";
+import EventVehicles, { type EventVehicle, type FleetItem } from "./EventVehicles";
 
 export type EventRow = {
   id: string; slug: string; title: string; category: string; tripType: string; durationLabel: string; summary: string;
   imageUrl: string | null; departsAt: string; meetingPoint: string; priceKes: number; published: boolean; placeholder: boolean;
-  destination: string; county: string; town: string; booked: number; seats: number; bookings: number; pinned: boolean;
+  vehicles: EventVehicle[]; destination: string; county: string; town: string; booked: number; seats: number; bookings: number; pinned: boolean;
 };
 type Msg = { ok: boolean; text: string } | null;
 type Reply = { error?: unknown; notified?: number };
@@ -64,7 +65,7 @@ function Editor({ e, onDone }: { e: EventRow; onDone: (m: Msg) => void }) {
   );
 }
 
-export default function EventsManager({ rows }: { rows: EventRow[] }) {
+export default function EventsManager({ rows, fleet }: { rows: EventRow[]; fleet: FleetItem[] }) {
   const router = useRouter();
   const [sel, setSel] = useState<string[]>([]), [open, setOpen] = useState<string | null>(null), [busy, setBusy] = useState(false), [msg, setMsg] = useState<Msg>(null);
   const [filter, setFilter] = useState<"all" | "live" | "draft" | "past">("all");
@@ -135,6 +136,7 @@ export default function EventsManager({ rows }: { rows: EventRow[] }) {
               </div>
             </div>
             {open === r.id && <div className="ev-more"><Editor e={r} onDone={m => { setMsg(m); if (m?.ok) { setOpen(null); router.refresh(); } }} />
+              <EventVehicles tripId={r.id} priceKes={r.priceKes} vehicles={r.vehicles} fleet={fleet} />
               <div className="adm-actions"><a className="btn ghost sm" href={`/trips/${r.slug}`} target="_blank" rel="noreferrer">View on site ↗</a>
                 <button type="button" className="btn ghost sm" disabled={busy || r.bookings > 0} title={r.bookings > 0 ? "Has bookings: unpublish instead" : "Delete this event"} onClick={() => remove(r)}>Delete event</button></div></div>}
           </li>

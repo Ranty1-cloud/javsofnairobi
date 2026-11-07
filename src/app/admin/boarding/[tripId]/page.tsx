@@ -11,9 +11,9 @@ export default async function BoardingTrip({ params }: { params: { tripId: strin
   if (!(await requireRole(["SUPER_ADMIN", "ADMIN", "BOOKING_MANAGER", "SUPPORT"]))) redirect("/admin");
   const trip = await db.trip.findUnique({ where: { id: params.tripId }, select: { id: true, title: true, departsAt: true, meetingPoint: true } });
   if (!trip) notFound();
-  const tickets = await db.ticket.findMany({ where: { booking: { tripId: trip.id, status: "CONFIRMED" } }, include: { seat: { select: { label: true } }, booking: { select: { reference: true, phone: true } } }, orderBy: { createdAt: "asc" } });
-  const rows = tickets.map(t => ({ id: t.id, seat: t.seat.label, name: t.passengerName, ref: t.booking.reference, phone: t.booking.phone, at: t.checkedInAt?.toISOString() ?? null }))
-    .sort((a, b) => a.seat.localeCompare(b.seat, undefined, { numeric: true }));
+  const tickets = await db.ticket.findMany({ where: { booking: { tripId: trip.id, status: "CONFIRMED" } }, include: { seat: { select: { label: true, tripVehicle: { select: { name: true } } } }, booking: { select: { reference: true, phone: true } } }, orderBy: { createdAt: "asc" } });
+  const rows = tickets.map(t => ({ id: t.id, seat: t.seat.label, vehicle: t.seat.tripVehicle?.name ?? "", name: t.passengerName, ref: t.booking.reference, phone: t.booking.phone, at: t.checkedInAt?.toISOString() ?? null }))
+    .sort((a, b) => a.vehicle.localeCompare(b.vehicle) || a.seat.localeCompare(b.seat, undefined, { numeric: true }));
   const boarded = rows.filter(r => r.at).length, pct = rows.length ? Math.round((boarded / rows.length) * 100) : 0;
   const near = Math.abs(trip.departsAt.getTime() - Date.now()) < 12 * 3_600_000;
   return (

@@ -18,11 +18,12 @@ const ICON: Record<string, string> = {
   calendar: "M3 5h18v16H3zM3 10h18M8 3v4M16 3v4",
   photos: "M4 4h16v16H4zM8 15l3-3 4 4 2-2 3 3M8.5 8.5h.01",
   doc: "M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h5",
+  bus: "M5 4h14a2 2 0 012 2v11H3V6a2 2 0 012-2zM3 11h18M7 17v3M17 17v3M7 14h.01M17 14h.01",
   star: "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
 };
 const GROUPS: { title: string; links: [href: string, label: string, icon: keyof typeof ICON][] }[] = [
   { title: "Overview", links: [["/admin", "Dashboard", "grid"], ["/admin/analytics", "Analytics", "chart"]] },
-  { title: "Content", links: [["/admin/events", "Events", "calendar"], ["/admin/articles", "Articles", "doc"], ["/admin/destinations", "Destinations", "route"], ["/admin/nganya", "Nganya", "star"], ["/admin/gallery", "Gallery", "photos"], ["/admin/site", "Homepage photo", "image"]] },
+  { title: "Content", links: [["/admin/events", "Events", "calendar"], ["/admin/vehicles", "Vehicles", "bus"], ["/admin/articles", "Articles", "doc"], ["/admin/destinations", "Destinations", "route"], ["/admin/nganya", "Nganya", "star"], ["/admin/gallery", "Gallery", "photos"], ["/admin/site", "Homepage photo", "image"]] },
   { title: "Operations", links: [["/admin/payments", "Payments", "card"], ["/admin/moderation", "Moderation", "shield"], ["/admin/scan", "Scan tickets", "scan"], ["/admin/boarding", "Boarding lists", "list"], ["/admin/waitlist", "Waitlists", "clock"]] },
   { title: "Growth & access", links: [["/admin/promos", "Promo codes", "tag"], ["/admin/staff", "Staff & roles", "users"], ["/admin/audit", "Audit log", "log"]] },
 ];
