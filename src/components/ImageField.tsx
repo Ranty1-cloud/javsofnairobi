@@ -5,8 +5,8 @@ import { shrinkImage } from "@/lib/shrink-image";
 
 // A form field that holds an image URL. Staff can upload a photo (drag/choose) or paste an existing link.
 // Renders a plain <input name=...> so it works inside any FormData-based form.
-export default function ImageField({ name, label, folder, required = false }: { name: string; label: string; folder: "trips" | "articles" | "destinations" | "nganya" | "gallery"; required?: boolean }) {
-  const [url, setUrl] = useState("");
+export default function ImageField({ name, label, folder, required = false, initial = "" }: { name: string; label: string; folder: "trips" | "articles" | "destinations" | "nganya" | "gallery"; required?: boolean; initial?: string }) {
+  const [url, setUrl] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 

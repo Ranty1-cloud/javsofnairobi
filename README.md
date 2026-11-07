@@ -84,6 +84,8 @@ Setup: create a **public** Storage bucket, set `SUPABASE_BUCKET` to its name. Up
 |---|---|---|
 | `/admin` and `/admin/analytics` | all staff (money figures: Super Admin, Admin, Finance) | Live dashboard, charts, CSV |
 | `/admin/manage` | by form | Create trips, articles, destinations, Nganya, gallery. Image fields upload straight to Supabase Storage (shrunk to WebP in the browser) or accept a pasted link |
+| `/admin/events` | Super Admin, Admin, Booking Manager | Every event in one list: tick and publish/unpublish in bulk, pin up to 6 to the homepage, edit name, date, meeting point, photo and description, delete events with no bookings |
+| `/admin/gallery` | Super Admin, Admin, Content Editor | Upload many photos at once, set category and caption, delete |
 | `/admin/site` | Super Admin, Admin, Content Editor | Homepage photo library |
 | `/admin/boarding` | Super Admin, Admin, Booking Manager, Support | Per-trip passenger list, "boarded X of Y", manual check-in and undo (auto-refreshes within 12 hours of departure) |
 | `/admin/waitlist` | Super Admin, Admin, Booking Manager, Support | Who is waiting per trip, one-tap WhatsApp or email |

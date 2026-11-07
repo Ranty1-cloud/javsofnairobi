@@ -3,7 +3,8 @@ import { db } from "@/lib/db";
 import Countdown from "@/components/Countdown";
 import TripCard from "@/components/TripCard";
 import NewsletterForm from "@/components/NewsletterForm";
-import { toCard, upcomingTrips, liveArticles } from "@/lib/queries";
+import { toCard, upcomingTrips, liveArticles, tripInclude } from "@/lib/queries";
+import { readFeatured } from "@/lib/featured";
 import { fmtDateTime } from "@/lib/format";
 export const dynamic = "force-dynamic";
 const wa = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
@@ -19,7 +20,11 @@ export default async function Home() {
     db.ticket.count(), db.trip.count({ where: { published: true, departsAt: { gt: new Date() } } }), db.destination.count(), db.article.count({ where: liveArticles() }),
   ]);
   const heroSetting = await db.siteSetting.findUnique({ where: { key: "heroImage" } });
-  const next = trips[0], heroImg = heroSetting?.value ?? next?.imageUrl ?? gallery[0]?.url;
+  const pinnedIds = await readFeatured();
+  const pinned = pinnedIds.length ? await db.trip.findMany({ where: { id: { in: pinnedIds }, published: true, departsAt: { gt: new Date() } }, include: tripInclude }) : [];
+  const ordered = pinnedIds.map(id => pinned.find(x => x.id === id)).filter((x): x is (typeof pinned)[number] => !!x);
+  const shown = [...ordered, ...trips.filter(t => !pinnedIds.includes(t.id))].slice(0, 6);
+  const next = shown[0], heroImg = heroSetting?.value ?? next?.imageUrl ?? gallery[0]?.url;
   return (
     <>
       <section className="hero">
@@ -33,7 +38,7 @@ export default async function Home() {
           </div>
           <aside className="glass rise" style={{ animationDelay: ".15s" }} aria-label="Next adventure">
             {next ? <>
-              <p className="eyebrow">Next adventure{next.isSample && " · sample"}</p>
+              <p className="eyebrow">Next adventure</p>
               <h3 className="disp" style={{ fontSize: "2.2rem", margin: 0 }}>{next.title}</h3>
               <p className="mut" style={{ margin: "4px 0" }}>{next.destination.name} · {fmtDateTime(next.departsAt)}</p>
               <Countdown to={next.departsAt.toISOString()} />
@@ -49,7 +54,7 @@ export default async function Home() {
       </div>
 
       <section className="wrap"><Head t="Featured upcoming trips" href="/trips" />
-        <div className="grid">{trips.map(t => <TripCard key={t.id} t={toCard(t)} />)}{!trips.length && <div className="empty">No upcoming trips yet. New adventures are announced here and in the community.</div>}</div>
+        <div className="grid">{shown.map(t => <TripCard key={t.id} t={toCard(t)} />)}{!shown.length && <div className="empty">No upcoming trips yet. New adventures are announced here and in the community.</div>}</div>
       </section>
 
       <section className="wrap" style={{ paddingTop: 0 }}><Head t="Book in four steps" />
