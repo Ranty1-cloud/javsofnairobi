@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { fmtDateTime } from "@/lib/format";
 import { notFound, redirect } from "next/navigation";
 import { getSession, requireRole, STAFF } from "@/lib/session";
 import { db } from "@/lib/db";
@@ -17,7 +18,7 @@ export default async function Booking({ params }: { params: { id: string } }) {
     <main className="wrap" style={{ maxWidth: 640 }}>
       <AutoRefresh active={b.status === "PENDING" && pay?.status !== "FAILED"} />
       <h1>Booking <span style={{ color: "#E50914" }}>{b.reference}</span></h1>
-      <p>{b.trip.title} · {b.trip.departsAt.toLocaleString("en-KE")}</p>
+      <p>{b.trip.title} · {fmtDateTime(b.trip.departsAt)}</p>
       <p>Seats: {b.seats.map(s => s.label).join(", ") || "released"} · Total <b>KSh {b.totalKes.toLocaleString()}</b></p>
       <div className="card"><b>{pay?.status === "FAILED" ? "Payment failed or was cancelled. Please try again." : msg[b.status]}</b></div>
       {b.status === "PENDING" && pay?.provider === "mpesa_manual" && pay.status === "PENDING" && <ManualPay id={b.id} till={TILL} reference={b.reference} amount={pay.amountKes} submitted={pay.providerRef} payerName={pay.payerName} />}

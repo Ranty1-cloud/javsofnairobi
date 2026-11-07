@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, Bebas_Neue } from "next/font/google";
 import "./globals.css";
+import StaffBar from "@/components/StaffBar";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import FloatingHelp from "@/components/FloatingHelp";
@@ -23,6 +24,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <a href="#main" className="btn sm skip">Skip to content</a>
         <Nav /><div id="main">{children}</div><Footer />
         <FloatingHelp />
+        <StaffBar />
       </body>
     </html>
   );

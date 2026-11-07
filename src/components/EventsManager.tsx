@@ -1,4 +1,5 @@
 "use client";
+import TripTypeFields from "./TripTypeFields";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageField from "./ImageField";
@@ -51,8 +52,7 @@ function Editor({ e, onDone }: { e: EventRow; onDone: (m: Msg) => void }) {
           {!e.county && <p className="note" style={{ margin: 0 }}>This event has no county yet. Choose one so it shows the right place.</p>}
           <label>Name</label><input name="title" defaultValue={e.title} required minLength={3} maxLength={120} />
           <label>Category</label><input name="category" defaultValue={e.category} required minLength={2} maxLength={60} placeholder="e.g. Road trip, Nganya event, Resort" />
-          <label>Trip type</label><select name="tripType" defaultValue={e.tripType}><option value="DAY">Day trip</option><option value="OVERNIGHT">Overnight</option><option value="WEEKEND">Weekend</option></select>
-          <label>Duration</label><input name="durationLabel" defaultValue={e.durationLabel} maxLength={60} placeholder="e.g. 1 day, 2 days" /></div>
+          <TripTypeFields defaultType={e.tripType} defaultDuration={e.durationLabel} placeholder="e.g. 1 day, 2 days" /></div>
         <div className="stack"><label>Departure (Nairobi time)</label><input name="departsAt" type="datetime-local" defaultValue={toInput(e.departsAt)} required />
           <label>Meeting point</label><input name="meetingPoint" defaultValue={e.meetingPoint} required minLength={2} maxLength={160} />
           <ImageField name="imageUrl" label="Cover photo" folder="trips" initial={e.imageUrl ?? ""} />

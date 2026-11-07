@@ -1,4 +1,5 @@
 "use client";
+import TripTypeFields from "./TripTypeFields";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageField from "./ImageField";
@@ -35,8 +36,7 @@ export default function NewEventForm({ vehicles }: { vehicles: { id: string; nam
           <PlaceFields />
           <label htmlFor="ne-mp">Meeting point</label><input id="ne-mp" name="meetingPoint" required minLength={2} maxLength={160} placeholder="e.g. Kencom, Nairobi CBD" />
           <label htmlFor="ne-dep">Departure (Nairobi time)</label><input id="ne-dep" name="departsAt" type="datetime-local" required />
-          <label htmlFor="ne-type">Trip type</label><select id="ne-type" name="tripType" defaultValue="DAY"><option value="DAY">Day trip</option><option value="OVERNIGHT">Overnight</option><option value="WEEKEND">Weekend</option></select>
-          <label htmlFor="ne-dur">Duration <span className="mut">(optional)</span></label><input id="ne-dur" name="durationLabel" maxLength={60} placeholder="e.g. 2 days, 1 night" />
+          <TripTypeFields idPrefix="ne" defaultType="DAY" defaultDuration="" optional placeholder="e.g. 2 days, 1 night" />
         </div>
         <div className="stack">
           <label htmlFor="ne-veh">Vehicle (sets the seat layout)</label>
