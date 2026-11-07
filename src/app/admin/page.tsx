@@ -78,7 +78,7 @@ export default async function Admin({ searchParams }: { searchParams: { range?: 
 
       <div className="adm-grid g-1-1">
         <section className="panel"><div className="panel-head"><h2>Upcoming trips · seats</h2><Link href="/admin/events" className="mut">Manage →</Link></div>
-          {s.occupancy.length ? <ul className="occ">{s.occupancy.map(t => <li key={t.id}><div className="hb-top"><Link href={`/trips/${t.slug}`}>{t.title}</Link><b>{t.booked}/{t.total}</b></div><Meter pct={t.pct} held={t.total ? Math.round((t.held / t.total) * 100) : 0} label={t.title} /><small className="mut">{fmtDateTime(t.departsAt)}{t.held ? ` · ${t.held} on hold` : ""}</small></li>)}</ul> : <p className="mut">No published upcoming trips. Create one from Trips & content.</p>}
+          {s.occupancy.length ? <ul className="occ">{s.occupancy.map(t => <li key={t.id}><div className="hb-top"><Link href={`/trips/${t.slug}`} target="_blank" rel="noopener">{t.title}</Link><b>{t.booked}/{t.total}</b></div><Meter pct={t.pct} held={t.total ? Math.round((t.held / t.total) * 100) : 0} label={t.title} /><small className="mut">{fmtDateTime(t.departsAt)}{t.held ? ` · ${t.held} on hold` : ""}</small></li>)}</ul> : <p className="mut">No published upcoming trips. Create one from Trips & content.</p>}
         </section>
         <section className="panel"><div className="panel-head"><h2>Top trips</h2><span className="mut">{money ? "By revenue" : "By bookings"}</span></div>
           <HBars items={s.topTrips.map(t => ({ label: t.label, value: money ? t.revenue : t.count, note: `${t.count} booking${t.count === 1 ? "" : "s"}` }))} fmt={money ? ksh : String} empty="No confirmed bookings in this period yet." />
