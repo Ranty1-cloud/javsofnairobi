@@ -1,10 +1,11 @@
+import { ARTICLE_CATS } from "@/lib/content";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { liveArticles } from "@/lib/queries";
 import { fmtDate, readMins } from "@/lib/format";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "News & Stories", description: "Travel updates, destination guides, event announcements and Nganya news." };
-const CATS = ["Nganya", "Travel", "Events", "Guides"];
+const CATS = [...ARTICLE_CATS];
 export default async function News({ searchParams }: { searchParams: { c?: string; q?: string } }) {
   const items = await db.article.findMany({ where: { ...liveArticles(), ...(searchParams.c ? { category: searchParams.c } : {}), ...(searchParams.q ? { OR: [{ title: { contains: searchParams.q, mode: "insensitive" } }, { excerpt: { contains: searchParams.q, mode: "insensitive" } }] } : {}) }, orderBy: { publishedAt: "desc" }, take: 30 });
   const [lead, ...rest] = items;
