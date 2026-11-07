@@ -7,8 +7,12 @@ import SubmitForm from "@/components/SubmitForm";
 import Countdown from "@/components/Countdown";
 import ShareButtons from "@/components/ShareButtons";
 import { fmtDate, fmtTime, ksh, TYPE_LABEL, site } from "@/lib/format";
+
+import { getSession } from "@/lib/session";
+export const dynamic = "force-dynamic";
 export const dynamic = "force-dynamic"; // live seat map
 const bySlug = cache((slug: string) => db.trip.findUnique({ where: { slug }, include: { destination: true, vehicle: { select: { name: true } }, seats: { orderBy: { label: "asc" } }, reviews: { where: { approved: true }, orderBy: { createdAt: "desc" } } } }));
+ main
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const t = await bySlug(params.slug);
   if (!t || !t.published) return {};
@@ -18,6 +22,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function TripPage({ params }: { params: { slug: string } }) {
   const trip = await bySlug(params.slug);
   if (!trip || !trip.published) notFound();
+  const signedIn = !!(await getSession());
+  const next = encodeURIComponent(`/trips/${trip.slug}`);
   const now = new Date();
   const seats = trip.seats.map(s => ({ label: s.label, priceKes: s.priceKes, status: s.status === "RESERVED" && s.heldUntil && s.heldUntil < now && !s.bookingId ? "AVAILABLE" : s.status }));
   const left = seats.filter(s => s.status === "AVAILABLE").length, past = trip.departsAt < now;
@@ -44,7 +50,7 @@ export default async function TripPage({ params }: { params: { slug: string } })
         {!past && <ShareButtons title={trip.title} line={`${fmtDate(trip.departsAt)} · ${fmtTime(trip.departsAt)} · From ${ksh(trip.priceKes)}${left > 0 ? ` · ${left} seats left` : ""}`} />}
         {trip.summary && <p className="prose" style={{ maxWidth: 760 }}>{trip.summary}</p>}
         <h2 style={{ marginTop: 32 }}>Choose your seats</h2>
-        {past ? <p className="note">This trip has already departed.</p> : left > 0 ? <SeatMap tripId={trip.id} seats={seats} fee={trip.bookingFeeKes} /> : <div className="card narrow"><h3>Fully booked</h3><p className="mut">Join the waitlist and we&apos;ll message you if seats open up.</p><SubmitForm endpoint="/api/waitlist" extra={{ tripId: trip.id }} fields={["contact"]} label="Join waitlist (phone or email)" /></div>}
+        {past ? <p className="note">This trip has already departed.</p> : left > 0 && !signedIn ? <div className="card narrow"><h3>Log in to book</h3><p className="mut">You need a free account to book a seat. It keeps your tickets in one place and lets you manage or cancel your bookings.</p><div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><Link className="btn" href={`/login?next=${next}`}>Log in</Link><Link className="btn ghost" href={`/register?next=${next}`}>Create account</Link></div></div> : left > 0 ? <SeatMap tripId={trip.id} seats={seats} fee={trip.bookingFeeKes} /> : <div className="card narrow"><h3>Fully booked</h3><p className="mut">Join the waitlist and we&apos;ll message you if seats open up.</p><SubmitForm endpoint="/api/waitlist" extra={{ tripId: trip.id }} fields={["contact"]} label="Join waitlist (phone or email)" /></div>}
         <h2 style={{ marginTop: 48 }}>Reviews{avg > 0 && <span className="red"> · {avg.toFixed(1)}/5</span>}</h2>
         <div className="grid">{trip.reviews.map(r => <div key={r.id} className="card"><div className="red">{"★".repeat(r.rating)}</div><p>{r.body}</p><b>{r.name}</b></div>)}{!trip.reviews.length && <div className="empty">No reviews yet. Travellers can review after their trip.</div>}</div>
       </div>

@@ -13,6 +13,8 @@ const base = () => process.env.MPESA_ENV === "production" ? "https://api.safaric
 
 export async function POST(req: Request) {
   if (limited("pay:" + clientIp(req), 8)) return NextResponse.json({ error: "Too many attempts, wait a minute" }, { status: 429 });
+  const session = await getSession(); // booking requires an account; checked before anything is claimed (promo codes, seats)
+  if (!session) return NextResponse.json({ error: "Please log in or create an account to book.", login: true }, { status: 401 });
   const p = body.safeParse(await req.json());
   if (!p.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   const { tripId, labels, phone, email, passengers, whatsappOptIn, promoCode, method } = p.data;
@@ -32,9 +34,8 @@ export async function POST(req: Request) {
     amount = Math.max(1, amount - discount); code = pc.code;
   }
   const msisdn = phone.replace(/^0/, "254");
-  const session = await getSession();
   const created = await db.$transaction(async tx => {
-    const booking = await tx.booking.create({ data: { reference: "JVS" + randomBytes(4).toString("hex").slice(0, 6).toUpperCase(), tripId, guestEmail: email, phone: msisdn, whatsappOptIn, userId: session?.userId, passengers: { create: passengers.filter(x => labels.includes(x.label)) }, totalKes: amount, discountKes: discount, promoCode: code, seats: { connect: seats.map(s => ({ id: s.id })) } } });
+    const booking = await tx.booking.create({ data: { reference: "JVS" + randomBytes(4).toString("hex").slice(0, 6).toUpperCase(), tripId, guestEmail: email, phone: msisdn, whatsappOptIn, userId: session.userId, passengers: { create: passengers.filter(x => labels.includes(x.label)) }, totalKes: amount, discountKes: discount, promoCode: code, seats: { connect: seats.map(s => ({ id: s.id })) } } });
     const payment = await tx.payment.create({ data: { bookingId: booking.id, provider: method === "manual" ? "mpesa_manual" : "mpesa", idempotencyKey: `${booking.id}:stk`, amountKes: amount, status: "PENDING" } });
     return { booking, payment };
   }).catch(async e => { await releasePromo(code); console.error("booking create failed", e); return null; });

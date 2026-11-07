@@ -24,6 +24,7 @@ export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats:
   }, [until]);
   const chosen = seats.filter(s => sel.includes(s.label));
   const subtotal = chosen.reduce((a, s) => a + s.priceKes, 0), sum = subtotal + (sel.length ? fee : 0);
+  const toLogin = () => { window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`; }; // session expired: log in, then land back on this trip
   async function toggle(s: Seat) {
     if (s.status !== "AVAILABLE" && !sel.includes(s.label)) return;
     if (sel.includes(s.label)) {
@@ -32,6 +33,7 @@ export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats:
     }
     const next = [...sel, s.label];
     const r = await fetch("/api/seats/hold", { method: "POST", body: JSON.stringify({ tripId, labels: next }) }), j = await r.json();
+    if (r.status === 401) return toLogin();
     if (!r.ok) return setMsg(j.error ?? "Could not hold that seat");
     setMsg(""); setUntil(new Date(j.until).getTime()); setSel(next);
   }
@@ -39,6 +41,7 @@ export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats:
     setBusy(true); setMsg("");
     const r = await fetch("/api/payments/mpesa/stk", { method: "POST", body: JSON.stringify({ tripId, labels: sel, phone, email: email || undefined, passengers: sel.map(label => ({ label, name: names[label] ?? "" })), whatsappOptIn: optIn, promoCode: promo || undefined, method }) });
     const j = await r.json();
+    if (r.status === 401) return toLogin();
     if (r.ok) window.location.href = `/booking/${j.id}`; else { setMsg(j.error ?? "Could not start payment"); setBusy(false); }
   }
   const mm = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
@@ -62,7 +65,7 @@ export default function SeatMap({ tripId, seats, fee }: { tripId: string; seats:
           <h3>Passenger details</h3>
           {sel.map(l => <div key={l}><label htmlFor={`n${l}`}>Seat {l} passenger name</label><input id={`n${l}`} autoComplete="name" value={names[l] ?? ""} onChange={e => setNames({ ...names, [l]: e.target.value })} /></div>)}
           <label htmlFor="ph">M-Pesa / WhatsApp number</label><input id="ph" inputMode="tel" placeholder="07XX XXX XXX" value={phone} onChange={e => setPhone(e.target.value.replace(/\s/g, ""))} />
-          <label htmlFor="em">Email (optional)</label><input id="em" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+          <label htmlFor="em">Send tickets to a different email (optional, defaults to your account email)</label><input id="em" type="email" value={email} onChange={e => setEmail(e.target.value)} />
           <label htmlFor="pr">Promo code (optional)</label><input id="pr" value={promo} onChange={e => setPromo(e.target.value)} />
           <label><input type="checkbox" checked={optIn} onChange={e => setOptIn(e.target.checked)} />Send my tickets to this number on WhatsApp</label>
         </div>}

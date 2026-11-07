@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { limited, clientIp } from "@/lib/ratelimit";
+import { getSession } from "@/lib/session";
 const b = z.object({ id: z.string(), code: z.string().regex(/^[A-Z0-9]{10}$/, "Enter the 10-character M-Pesa code") });
 export async function POST(req: Request) {
   if (limited("m:" + clientIp(req), 6)) return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Please log in to continue.", login: true }, { status: 401 });
   const p = b.safeParse(await req.json());
   if (!p.success) return NextResponse.json({ error: p.error.issues[0].message }, { status: 400 });
-  const pay = await db.payment.findFirst({ where: { bookingId: p.data.id, provider: "mpesa_manual", status: "PENDING" } });
+  const pay = await db.payment.findFirst({ where: { bookingId: p.data.id, provider: "mpesa_manual", status: "PENDING", booking: { userId: session.userId } } }); // owner only
   if (!pay) return NextResponse.json({ error: "No pending manual payment" }, { status: 404 });
   try { await db.payment.update({ where: { id: pay.id }, data: { providerRef: p.data.code } }); }
   catch { return NextResponse.json({ error: "That code was already used for another booking" }, { status: 409 }); }
