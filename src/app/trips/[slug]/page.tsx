@@ -1,4 +1,6 @@
 import { cache } from "react";
+import { getSession } from "@/lib/session";
+import { supabaseServer } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -18,6 +20,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function TripPage({ params }: { params: { slug: string } }) {
   const trip = await bySlug(params.slug);
   if (!trip || !trip.published) notFound();
+  const me = await getSession();
+  const accountEmail = me ? (await supabaseServer().auth.getUser()).data.user?.email ?? "" : "";
   const now = new Date();
   const seats = trip.seats.map(s => ({ label: s.label, priceKes: s.priceKes, status: s.status === "RESERVED" && s.heldUntil && s.heldUntil < now && !s.bookingId ? "AVAILABLE" : s.status }));
   const left = seats.filter(s => s.status === "AVAILABLE").length, past = trip.departsAt < now;
@@ -44,7 +48,7 @@ export default async function TripPage({ params }: { params: { slug: string } })
         {!past && <ShareButtons title={trip.title} line={`${fmtDate(trip.departsAt)} · ${fmtTime(trip.departsAt)} · From ${ksh(trip.priceKes)}${left > 0 ? ` · ${left} seats left` : ""}`} />}
         {trip.summary && <p className="prose" style={{ maxWidth: 760 }}>{trip.summary}</p>}
         <h2 style={{ marginTop: 32 }}>Choose your seats</h2>
-        {past ? <p className="note">This trip has already departed.</p> : left > 0 ? <SeatMap tripId={trip.id} seats={seats} fee={trip.bookingFeeKes} /> : <div className="card narrow"><h3>Fully booked</h3><p className="mut">Join the waitlist and we&apos;ll message you if seats open up.</p><SubmitForm endpoint="/api/waitlist" extra={{ tripId: trip.id }} fields={["contact"]} label="Join waitlist (phone or email)" /></div>}
+        {past ? <p className="note">This trip has already departed.</p> : left > 0 ? <SeatMap tripId={trip.id} seats={seats} fee={trip.bookingFeeKes} signedIn={!!me} email={accountEmail} next={`/trips/${trip.slug}`} /> : <div className="card narrow"><h3>Fully booked</h3><p className="mut">Join the waitlist and we&apos;ll message you if seats open up.</p><SubmitForm endpoint="/api/waitlist" extra={{ tripId: trip.id }} fields={["contact"]} label="Join waitlist (phone or email)" /></div>}
         <h2 style={{ marginTop: 48 }}>Reviews{avg > 0 && <span className="red"> · {avg.toFixed(1)}/5</span>}</h2>
         <div className="grid">{trip.reviews.map(r => <div key={r.id} className="card"><div className="red">{"★".repeat(r.rating)}</div><p>{r.body}</p><b>{r.name}</b></div>)}{!trip.reviews.length && <div className="empty">No reviews yet. Travellers can review after their trip.</div>}</div>
       </div>

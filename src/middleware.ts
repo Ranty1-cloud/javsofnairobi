@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 // Refreshes the Supabase session cookie and keeps anonymous visitors out of /admin and /account.
 // Roles are still verified against the DB in each page and API route.
 export async function middleware(req: NextRequest) {
-  const gated = req.nextUrl.pathname.startsWith("/admin") || req.nextUrl.pathname.startsWith("/account");
+  const gated = req.nextUrl.pathname.startsWith("/admin") || req.nextUrl.pathname.startsWith("/account") || req.nextUrl.pathname.startsWith("/booking");
   const hasAuthCookie = req.cookies.getAll().some(c => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
   if (!gated && !hasAuthCookie) return NextResponse.next(); // public page, nobody signed in: skip the Supabase round trip
   let res = NextResponse.next({ request: req });
@@ -19,7 +19,7 @@ export async function middleware(req: NextRequest) {
   });
   const { data: { user } } = await sb.auth.getUser();
   if (gated && !user) {
-    const url = req.nextUrl.clone(); url.pathname = "/login"; url.search = "";
+    const url = req.nextUrl.clone(); const back = req.nextUrl.pathname + req.nextUrl.search; url.pathname = "/login"; url.search = `?next=${encodeURIComponent(back)}`;
     const redirect = NextResponse.redirect(url);
     res.cookies.getAll().forEach(c => redirect.cookies.set(c));
     return redirect;

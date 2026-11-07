@@ -7,7 +7,7 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
     const data = Object.fromEntries(new FormData(e.currentTarget));
     const r = await fetch(`/api/auth/${mode}`, { method: "POST", body: JSON.stringify(data) });
     const j = await r.json();
-    if (r.ok && j.confirm) setMsg(j.message); else if (r.ok) window.location.href = j.role && j.role !== "CUSTOMER" ? "/admin" : "/trips"; else setErr(j.error ?? "Failed");
+    if (r.ok && j.confirm) setMsg(j.message); else if (r.ok) { const n = new URLSearchParams(window.location.search).get("next") ?? ""; window.location.href = n.startsWith("/") && !n.startsWith("//") ? n : j.role && j.role !== "CUSTOMER" ? "/admin" : "/trips"; } else setErr(j.error ?? "Failed");
   }
   return (
     <form onSubmit={go} style={{ maxWidth: 380 }}>
