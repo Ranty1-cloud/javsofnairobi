@@ -6,7 +6,7 @@ Adventure travel, road trips and Nganya culture platform. Next.js 14 (App Router
 cp .env.example .env          # set DATABASE_URL, the 3 SUPABASE vars (see Auth), CRON_SECRET, APP_URL
 npm install
 npx prisma migrate dev --name supabase_auth
-npm run db:seed               # demo trips for local development
+npm run db:seed               # adds the 14, 18 and 33 seater vehicles
 npm run admin:create -- you@example.com 'a-long-password' 'Your Name'   # first Super Admin (Supabase login + SUPER_ADMIN role)
 npm run dev
 ```
@@ -54,10 +54,12 @@ Until credentials exist, sending is skipped and tickets remain available on the 
 - `trip_reminder`: `Hi {{1}}, reminder: {{2}} departs {{3}}. Meeting point: {{4}}.` Schedule `/api/cron/reminders` hourly.
 - `trip_update`: `Hi {{1}}, an update for {{2}}: it now departs {{3}} from {{4}}.` Sent by `PATCH /api/admin/trips/:id` with `"notify": true`.
 
-## Manual M-Pesa (Paybill) and C2B auto-confirm
-Customers choose "Pay manually (Paybill)", pay MPESA_PAYBILL with their booking reference as the account number, and optionally enter the M-Pesa code. Seats stay held 2 hours.
+## M-Pesa Till payments and STK push
+Customers pay to Till **4308216** (Buy Goods and Services; override with `NEXT_PUBLIC_MPESA_TILL`) and enter the 10-character M-Pesa code on their booking page. Seats stay held 2 hours. The STK push button shows a "Coming soon" banner until `NEXT_PUBLIC_STK_ENABLED="true"` and the Daraja keys are set (the server refuses STK requests before then).
+
+Vehicles: 14-seater (7 rows of 2), 18-seater (6 rows of 3) and 33-seater bus (11 rows of 3). Each event uses the layout of the vehicle chosen when it is created.
 - Manual: staff open `/admin/payments`, compare code and exact amount with the M-Pesa statement, then Confirm.
-- Auto: register C2B URLs with Daraja (Register URL API) using `https://your-domain/api/payments/mpesa/c2b/confirmation?k=$MPESA_C2B_SECRET` and `.../c2b/validation`. Exact reference + exact amount matches confirm automatically; anything else is left in the audit log for staff.
+- Auto (Paybill only, not needed for a Till): register C2B URLs with Daraja (Register URL API) using `https://your-domain/api/payments/mpesa/c2b/confirmation?k=$MPESA_C2B_SECRET` and `.../c2b/validation`. Exact reference + exact amount matches confirm automatically; anything else is left in the audit log for staff.
 - Waitlist template `seat_available`: `Seats have opened on {{1}}. Book now: {{2}}`. Schedule `/api/cron/waitlist`.
 
 ## Email (Supabase)

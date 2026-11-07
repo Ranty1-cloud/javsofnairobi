@@ -10,7 +10,7 @@ export default function RefundForm() {
     setBusy(true); setMsg(null);
     const { ok, j } = await api("/api/admin/refund", "POST", { bookingId: String(f.get("bookingId") ?? "").trim(), reason: String(f.get("reason") ?? "").trim() });
     setBusy(false);
-    setMsg(ok ? { ok: true, text: "Refund recorded. Send the M-Pesa payout from your Paybill portal." } : { ok: false, text: errText(j, "Could not record the refund. Check the booking id.") });
+    setMsg(ok ? { ok: true, text: "Refund recorded. Send the M-Pesa payout from your M-Pesa Till or portal." } : { ok: false, text: errText(j, "Could not record the refund. Check the booking id.") });
     if (ok) setRev(n => n + 1);
   }
   return (

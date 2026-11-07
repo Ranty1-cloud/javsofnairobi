@@ -7,6 +7,7 @@ import { total } from "@/lib/pricing";
 import { getSession } from "@/lib/session";
 import { limited, clientIp } from "@/lib/ratelimit";
 import { releasePromo } from "@/lib/promo";
+import { STK_ENABLED } from "@/lib/pay";
 const body = z.object({ tripId: z.string(), labels: z.array(z.string()).min(1).max(8), phone: z.string().regex(/^(?:254|0)[17]\d{8}$/), email: z.string().email().optional(), passengers: z.array(z.object({ label: z.string(), name: z.string().min(2).max(80) })), whatsappOptIn: z.boolean().default(true), promoCode: z.string().max(30).optional(), method: z.enum(["stk", "manual"]).default("stk") });
 const base = () => process.env.MPESA_ENV === "production" ? "https://api.safaricom.co.ke" : "https://sandbox.safaricom.co.ke";
 
@@ -15,6 +16,7 @@ export async function POST(req: Request) {
   const p = body.safeParse(await req.json());
   if (!p.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   const { tripId, labels, phone, email, passengers, whatsappOptIn, promoCode, method } = p.data;
+  if (method !== "manual" && !STK_ENABLED) return NextResponse.json({ error: "M-Pesa STK push is coming soon. Please pay to our Till number instead." }, { status: 503 }); // checked first so no pending booking is created
   const holder = holderId();
   const trip = await db.trip.findUnique({ where: { id: tripId } });
   const seats = await db.tripSeat.findMany({ where: { tripId, label: { in: labels }, status: "RESERVED", heldBy: holder, bookingId: null, heldUntil: { gt: new Date() } } });
