@@ -8,7 +8,7 @@ import Countdown from "@/components/Countdown";
 import ShareButtons from "@/components/ShareButtons";
 import { fmtDate, fmtTime, ksh, TYPE_LABEL, site } from "@/lib/format";
 export const dynamic = "force-dynamic"; // live seat map
-const bySlug = cache((slug: string) => db.trip.findUnique({ where: { slug }, include: { destination: true, seats: { orderBy: { label: "asc" } }, reviews: { where: { approved: true }, orderBy: { createdAt: "desc" } } } }));
+const bySlug = cache((slug: string) => db.trip.findUnique({ where: { slug }, include: { destination: true, vehicle: { select: { name: true } }, seats: { orderBy: { label: "asc" } }, reviews: { where: { approved: true }, orderBy: { createdAt: "desc" } } } }));
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const t = await bySlug(params.slug);
   if (!t || !t.published) return {};
@@ -38,7 +38,7 @@ export default async function TripPage({ params }: { params: { slug: string } })
           <div><small>Departs</small>{fmtTime(trip.departsAt)}</div><div><small>Meeting point</small>{trip.meetingPoint}</div>
           <div><small>Type</small>{TYPE_LABEL[trip.tripType] ?? trip.tripType}{trip.durationLabel && ` · ${trip.durationLabel}`}</div>
           <div><small>From</small><span className="price">{ksh(trip.priceKes)}</span>{trip.bookingFeeKes > 0 && <span className="mut"> + {ksh(trip.bookingFeeKes)} fee</span>}</div>
-          <div><small>Seats left</small>{left}</div>
+          <div><small>Vehicle</small>{trip.vehicle.name}</div><div><small>Seats left</small>{left}</div>
           {!past && <div><small>Departs in</small><Countdown to={trip.departsAt.toISOString()} /></div>}
         </div>
         {!past && <ShareButtons title={trip.title} line={`${fmtDate(trip.departsAt)} · ${fmtTime(trip.departsAt)} · From ${ksh(trip.priceKes)}${left > 0 ? ` · ${left} seats left` : ""}`} />}

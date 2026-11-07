@@ -1,19 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 const db = new PrismaClient();
-const rows = ["A", "B", "C", "D"], cols = [1, 2, 3, 4];
-// Demo trips for local development. Edit or delete them from the admin dashboard.
+// Seat layouts: rows are letters, cols are seat numbers. The seat map puts the aisle in the middle of each row.
+const letters = (n: number) => Array.from({ length: n }, (_, i) => String.fromCharCode(65 + i));
+const VEHICLES = [
+  { name: "14-seater Nganya", capacity: 14, layout: { rows: letters(7), cols: [1, 2] } },
+  { name: "18-seater Nganya", capacity: 18, layout: { rows: letters(6), cols: [1, 2, 3] } },
+  { name: "33-seater Nganya Bus", capacity: 33, layout: { rows: letters(11), cols: [1, 2, 3] } },
+];
+// Safe to run more than once: adds only the vehicles that are missing. No demo trips or destinations are created.
 async function main() {
-  const dest = await db.destination.upsert({ where: { slug: "naivasha" }, update: {}, create: { slug: "naivasha", name: "Naivasha", region: "Rift Valley", description: "", lat: -0.7172, lng: 36.4310 } });
-  const veh = (await db.vehicle.findFirst()) ?? await db.vehicle.create({ data: { name: "16-seater Nganya", capacity: 16, layout: { rows, cols } } });
-  const demoTrips = [
-    ["rong-sato-szn-2", "Rong Sato SZN 2", "Nganya event", "DAY", "1 day"],
-    ["nairobi-night-adventure", "Nairobi Night Adventure", "Road trip", "OVERNIGHT", "Overnight"],
-    ["rift-valley-weekend", "Rift Valley Adventure", "Road trip", "WEEKEND", "2 days"],
-  ];
-  for (const [i, [slug, title, category, tripType, durationLabel]] of demoTrips.entries()) {
-    if (await db.trip.findUnique({ where: { slug } })) continue;
-    const t = await db.trip.create({ data: { slug, title, category, tripType, durationLabel, summary: "", destinationId: dest.id, vehicleId: veh.id, departsAt: new Date(Date.now() + (7 + i * 7) * 864e5), meetingPoint: "Nairobi CBD", priceKes: 1500, bookingFeeKes: 100, published: true, isSample: true } });
-    await db.tripSeat.createMany({ data: rows.flatMap(r => cols.map(c => ({ tripId: t.id, label: `${r}${c}`, priceKes: r === "A" ? 1800 : 1500 }))) });
-  }
+  for (const v of VEHICLES) if (!(await db.vehicle.findFirst({ where: { name: v.name } }))) await db.vehicle.create({ data: v });
 }
 main().finally(() => db.$disconnect());

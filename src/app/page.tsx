@@ -51,7 +51,7 @@ export default async function Home() {
       </section>
 
       <div className="strip">
-        {[["Seats locked on our server", "No double bookings, ever"], ["M-Pesa payments", "STK push or Paybill"], ["QR e-tickets", "Scanned at boarding"], ["WhatsApp support", "Real people, quick answers"]].map(([a, b]) => <div key={a}><b>{a}</b><span>{b}</span></div>)}
+        {[["Seats locked on our server", "No double bookings, ever"], ["M-Pesa payments", "Pay to our Till, STK push coming soon"], ["QR e-tickets", "Scanned at boarding"], ["WhatsApp support", "Real people, quick answers"]].map(([a, b]) => <div key={a}><b>{a}</b><span>{b}</span></div>)}
       </div>
 
       <section className="wrap"><Head t="Featured upcoming trips" href="/trips" />
@@ -59,7 +59,7 @@ export default async function Home() {
       </section>
 
       <section className="wrap" style={{ paddingTop: 0 }}><Head t="Book in four steps" />
-        <div className="grid">{[["1", "Pick a trip", "Browse by date, type, destination or budget."], ["2", "Choose your seats", "Live seat map. Seats are held for you for 10 minutes."], ["3", "Pay with M-Pesa", "STK push to your phone or manual Paybill. One clear total."], ["4", "Get your ticket", "QR ticket on the booking page and on WhatsApp."]].map(([n, h, p]) => <div key={n} className="card"><div className="stat">{n}</div><h3>{h}</h3><p className="mut" style={{ margin: 0 }}>{p}</p></div>)}</div>
+        <div className="grid">{[["1", "Pick a trip", "Browse by date, type, destination or budget."], ["2", "Choose your seats", "Live seat map. Seats are held for you for 10 minutes."], ["3", "Pay with M-Pesa", "Pay to our Till number, then enter your M-Pesa code. STK push is coming soon."], ["4", "Get your ticket", "QR ticket on the booking page and on WhatsApp."]].map(([n, h, p]) => <div key={n} className="card"><div className="stat">{n}</div><h3>{h}</h3><p className="mut" style={{ margin: 0 }}>{p}</p></div>)}</div>
       </section>
 
       {nganya.length > 0 && <section className="wrap" style={{ background: "var(--mid)", maxWidth: "none" }}><div style={{ maxWidth: 1248, margin: "0 auto" }}>

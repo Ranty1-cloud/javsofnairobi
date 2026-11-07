@@ -10,7 +10,7 @@ export const parseRange = (v: string | string[] | undefined): number => {
   const n = Number(Array.isArray(v) ? v[0] : v);
   return (RANGES as readonly number[]).includes(n) ? n : 30;
 };
-export const PROVIDER_LABEL: Record<string, string> = { mpesa: "M-Pesa STK push", mpesa_stk: "M-Pesa STK push", mpesa_manual: "M-Pesa Paybill (manual)", mpesa_c2b: "M-Pesa Paybill (auto)" };
+export const PROVIDER_LABEL: Record<string, string> = { mpesa: "M-Pesa STK push", mpesa_stk: "M-Pesa STK push", mpesa_manual: "M-Pesa Till (manual)", mpesa_c2b: "M-Pesa Paybill (auto)" };
 export const providerLabel = (p: string) => PROVIDER_LABEL[p] ?? p;
 
 export type Point = { label: string; value: number };

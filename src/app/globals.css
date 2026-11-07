@@ -197,3 +197,6 @@ body{overflow-x:clip}
 .pw{display:grid;gap:6px}.pw-box{position:relative}.pw-box input{padding-right:70px}.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--mut);font:600 .78rem var(--font-inter),sans-serif;padding:8px 10px;cursor:pointer;border-radius:8px}.pw-eye:hover{color:#fff}
 .pw-meter{display:flex;align-items:center;gap:10px}.pw-bars{display:flex;gap:4px;flex:1}.pw-bars i{height:4px;flex:1;border-radius:4px;background:var(--line)}.pw-bars i.on{background:#d9a400}.pw-bars i.on.l1{background:#E50914}.pw-bars i.on.l4{background:#2ecc71}.pw-meter small{color:var(--mut);font-size:.75rem;white-space:nowrap}
 .share{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0 6px}.share .mut{font-size:.82rem;margin-right:4px}
+/* payment step */
+.paybox{background:var(--black);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px}
+.soon{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:12px 14px;border:1px dashed var(--amber);border-radius:12px;font-size:.88rem;color:var(--mut)}.soon b{color:#fff}
