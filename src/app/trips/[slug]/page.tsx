@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import SeatMap from "@/components/SeatMap";
 import SubmitForm from "@/components/SubmitForm";
 import Countdown from "@/components/Countdown";
+import ShareButtons from "@/components/ShareButtons";
 import { fmtDate, fmtTime, ksh, TYPE_LABEL, site } from "@/lib/format";
 export const dynamic = "force-dynamic"; // live seat map
 const bySlug = cache((slug: string) => db.trip.findUnique({ where: { slug }, include: { destination: true, seats: { orderBy: { label: "asc" } }, reviews: { where: { approved: true }, orderBy: { createdAt: "desc" } } } }));
@@ -12,7 +13,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const t = await bySlug(params.slug);
   if (!t || !t.published) return {};
   const desc = t.summary || `${t.title} to ${t.destination.name}. From ${ksh(t.priceKes)}.`;
-  return { title: t.title, description: desc, openGraph: { title: t.title, description: desc, images: t.imageUrl ? [t.imageUrl] : undefined } };
+  return { title: t.title, description: desc, openGraph: { title: t.title, description: desc }, twitter: { card: "summary_large_image" } };
 }
 export default async function TripPage({ params }: { params: { slug: string } }) {
   const trip = await bySlug(params.slug);
@@ -40,6 +41,7 @@ export default async function TripPage({ params }: { params: { slug: string } })
           <div><small>Seats left</small>{left}</div>
           {!past && <div><small>Departs in</small><Countdown to={trip.departsAt.toISOString()} /></div>}
         </div>
+        {!past && <ShareButtons title={trip.title} line={`${fmtDate(trip.departsAt)} · ${fmtTime(trip.departsAt)} · From ${ksh(trip.priceKes)}${left > 0 ? ` · ${left} seats left` : ""}`} />}
         {trip.summary && <p className="prose" style={{ maxWidth: 760 }}>{trip.summary}</p>}
         <h2 style={{ marginTop: 32 }}>Choose your seats</h2>
         {past ? <p className="note">This trip has already departed.</p> : left > 0 ? <SeatMap tripId={trip.id} seats={seats} fee={trip.bookingFeeKes} /> : <div className="card narrow"><h3>Fully booked</h3><p className="mut">Join the waitlist and we&apos;ll message you if seats open up.</p><SubmitForm endpoint="/api/waitlist" extra={{ tripId: trip.id }} fields={["contact"]} label="Join waitlist (phone or email)" /></div>}
