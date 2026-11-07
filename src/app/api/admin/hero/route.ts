@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
 import { HERO_MAX, HERO_PATH, ROLES_HERO, readHero, saveLibrary, setActive } from "@/lib/hero";
+import { refreshSite } from "@/lib/refresh";
 
 const deny = () => NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
   await saveLibrary(library);
   await setActive(url);
   await db.auditLog.create({ data: { actor: u.id, action: "site.hero.update", detail: { path: p.data.path } } });
-  return NextResponse.json({ url, library });
+  refreshSite(); return NextResponse.json({ url, library });
 }
 
 // Switch the live photo to one already in the library.
@@ -41,7 +42,7 @@ export async function PATCH(req: Request) {
   if (!p.success || !(library.some(i => i.url === p.data.url) || active === p.data.url)) return NextResponse.json({ error: "Photo not in the library" }, { status: 400 });
   await setActive(p.data.url);
   await db.auditLog.create({ data: { actor: u.id, action: "site.hero.update", detail: { url: p.data.url } } });
-  return NextResponse.json({ url: p.data.url });
+  refreshSite(); return NextResponse.json({ url: p.data.url });
 }
 
 // ?url=...  removes one photo from the library (and Storage). No url: go back to the automatic photo.
@@ -53,7 +54,7 @@ export async function DELETE(req: Request) {
   if (!url) {
     await db.siteSetting.deleteMany({ where: { key: "heroImage" } });
     await db.auditLog.create({ data: { actor: u.id, action: "site.hero.reset" } });
-    return NextResponse.json({ ok: true, library });
+    refreshSite(); return NextResponse.json({ ok: true, library });
   }
   const item = library.find(i => i.url === url);
   if (!item && active !== url) return NextResponse.json({ error: "Photo not in the library" }, { status: 400 });
@@ -63,5 +64,5 @@ export async function DELETE(req: Request) {
   const bucket = process.env.SUPABASE_BUCKET;
   if (item?.path && bucket) await supabaseAdmin().storage.from(bucket).remove([item.path]);
   await db.auditLog.create({ data: { actor: u.id, action: "site.hero.delete", detail: { path: item?.path ?? null } } });
-  return NextResponse.json({ ok: true, library: next, reset: active === url });
+  refreshSite(); return NextResponse.json({ ok: true, library: next, reset: active === url });
 }

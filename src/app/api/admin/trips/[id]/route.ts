@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { waSend } from "@/lib/whatsapp";
+import { refreshSite } from "@/lib/refresh";
 const b = z.object({ departsAt: z.coerce.date().optional(), meetingPoint: z.string().min(2).max(160).optional(), published: z.boolean().optional(), imageUrl: z.string().url().optional(), title: z.string().min(3).max(120).optional(), summary: z.string().max(600).optional(), category: z.string().min(2).max(60).optional(), tripType: z.enum(["DAY", "OVERNIGHT", "WEEKEND"]).optional(), durationLabel: z.string().max(60).optional(), notify: z.boolean().default(false) });
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const u = await requireRole(["SUPER_ADMIN", "ADMIN", "BOOKING_MANAGER"]);
@@ -19,5 +20,5 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const bookings = await db.booking.findMany({ where: { tripId: trip.id, status: "CONFIRMED", whatsappOptIn: true, phone: { not: null } }, include: { passengers: true } });
     for (const bk of bookings) if (await waSend(bk.phone!, tpl, [bk.passengers[0]?.name ?? "there", trip.title, trip.departsAt.toLocaleString("en-KE", { timeZone: "Africa/Nairobi" }), trip.meetingPoint])) notified++;
   }
-  return NextResponse.json({ trip, notified });
+  refreshSite(); return NextResponse.json({ trip, notified });
 }

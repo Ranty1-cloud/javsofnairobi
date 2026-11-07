@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
+import { refreshSite } from "@/lib/refresh";
 const body = z.object({ slug: z.string().regex(/^[a-z0-9-]+$/), title: z.string().min(3), category: z.string(), destinationId: z.string(), vehicleId: z.string(), departsAt: z.coerce.date(), meetingPoint: z.string(), priceKes: z.number().int().positive(), premiumPriceKes: z.number().int().positive().optional(), bookingFeeKes: z.number().int().min(0).default(0), published: z.boolean().default(false), imageUrl: z.string().url().optional(), summary: z.string().max(600).optional(), tripType: z.enum(["DAY", "OVERNIGHT", "WEEKEND"]).default("DAY"), durationLabel: z.string().max(60).optional() });
 export async function POST(req: Request) {
   const admin = await requireRole(["SUPER_ADMIN", "ADMIN", "BOOKING_MANAGER"]);
@@ -15,5 +16,5 @@ export async function POST(req: Request) {
   const trip = await db.trip.create({ data: { ...data, isSample: false } });
   await db.tripSeat.createMany({ data: rows.flatMap((r, i) => cols.map(c => ({ tripId: trip.id, label: `${r}${c}`, priceKes: i === 0 && premiumPriceKes ? premiumPriceKes : data.priceKes }))) });
   await db.auditLog.create({ data: { actor: admin.id, action: "trip.create", detail: { tripId: trip.id } } });
-  return NextResponse.json(trip, { status: 201 });
+  refreshSite(); return NextResponse.json(trip, { status: 201 });
 }

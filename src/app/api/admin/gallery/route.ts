@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
 import { GALLERY_CATS } from "@/lib/gallery";
+import { refreshSite } from "@/lib/refresh";
 
 const ROLES = ["SUPER_ADMIN", "ADMIN", "CONTENT_EDITOR"] as const;
 const cat = z.enum(GALLERY_CATS);
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
   if (!p.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   const row = await db.galleryMedia.create({ data: p.data });
   await db.auditLog.create({ data: { actor: u.id, action: "gallery.create", detail: { id: row.id } } });
-  return NextResponse.json(row, { status: 201 });
+  refreshSite(); return NextResponse.json(row, { status: 201 });
 }
 
 export async function PATCH(req: Request) {
@@ -28,7 +29,7 @@ export async function PATCH(req: Request) {
   const r = await db.galleryMedia.updateMany({ where: { id }, data });
   if (!r.count) return NextResponse.json({ error: "No such photo" }, { status: 404 });
   await db.auditLog.create({ data: { actor: u.id, action: "gallery.update", detail: { id } } });
-  return NextResponse.json({ ok: true });
+  refreshSite(); return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(req: Request) {
@@ -46,5 +47,5 @@ export async function DELETE(req: Request) {
     if (path.startsWith("gallery/")) await supabaseAdmin().storage.from(bucket).remove([path]).catch(() => undefined);
   }
   await db.auditLog.create({ data: { actor: u.id, action: "gallery.delete", detail: { id } } });
-  return NextResponse.json({ ok: true });
+  refreshSite(); return NextResponse.json({ ok: true });
 }

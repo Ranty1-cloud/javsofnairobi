@@ -99,3 +99,8 @@ All uploads need the public Storage bucket from the Homepage photo section (`SUP
 A help-chat button and a WhatsApp button float on every public page (hidden in `/admin`). Set `NEXT_PUBLIC_WHATSAPP` (country code, no plus, e.g. `2547XXXXXXXX`) for the WhatsApp button and hand-offs.
 The chat is free and uses no AI or API key. It matches the visitor's question against `src/lib/support-kb.ts` (the same list the Support page shows) and, when nothing matches, offers to continue on WhatsApp with a person. Edit that file to add policies, and only add what the business has confirmed (refund terms are still marked as to be confirmed). It cannot see bookings or payments, so it never claims a payment or booking outcome.
 Messages are not stored. Rate limit is 12 per minute per IP, in memory like the other limiters, so move it to Redis before scaling out. An AI-written answer step could be added later behind the same route.
+
+## Speed
+- `vercel.json` pins functions to Dublin (`dub1`), next to the Supabase database (`eu-west-1`). Keep them in the same region. If you move the database, change this.
+- `DATABASE_URL` on Vercel must be the Supabase **pooler** string (Transaction mode, port 6543) with `?pgbouncer=true&connection_limit=1`. `DIRECT_URL` is the direct port 5432 string.
+- Home, Destinations and Nganya pages are cached for 60 seconds. Admin saves refresh them immediately.
