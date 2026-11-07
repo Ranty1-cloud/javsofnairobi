@@ -9,12 +9,14 @@ const ICON: Record<string, string> = {
   image: "M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6M9 9.5a.5.5 0 100-1 .5.5 0 000 1z",
   card: "M2 6h20v12H2zM2 10h20M6 15h4",
   shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",
+  key: "M15 11a4 4 0 100-8 4 4 0 000 8zM12.2 8.8L4 17v3h3v-2h2v-2h2l1.8-1.8",
   scan: "M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M7 12h10",
 };
 const GROUPS: { title: string; links: [href: string, label: string, icon: keyof typeof ICON][] }[] = [
   { title: "Overview", links: [["/admin", "Dashboard", "grid"], ["/admin/analytics", "Analytics", "chart"]] },
   { title: "Content", links: [["/admin/manage", "Trips & content", "route"], ["/admin/site", "Homepage photo", "image"]] },
   { title: "Operations", links: [["/admin/payments", "Payments", "card"], ["/admin/moderation", "Moderation", "shield"], ["/admin/scan", "Scan tickets", "scan"]] },
+  { title: "Account", links: [["/admin/password", "Change password", "key"]] },
 ];
 const Icon = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>;
 
