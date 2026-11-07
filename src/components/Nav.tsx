@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-const LINKS: [string, string][] = [["Home", "/"], ["Trips", "/trips"], ["Destinations", "/destinations"], ["Nganya Culture", "/nganya"], ["Gallery", "/gallery"], ["About", "/about"], ["Contact", "/support"]];
+const LINKS: [string, string][] = [["Home", "/"], ["Trips", "/trips"], ["Destinations", "/destinations"], ["Nganya Culture", "/nganya"], ["Gallery", "/gallery"], ["Shop", "/shop"], ["About", "/about"], ["Contact", "/support"]];
 const wa = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 export default function Nav() {
   const path = usePathname();

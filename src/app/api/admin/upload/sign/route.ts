@@ -7,7 +7,7 @@ import { HERO_EXT } from "@/lib/hero";
 // Signed upload for admin forms (trip, article, destination, Nganya, gallery images).
 // The browser sends the file straight to Supabase Storage with the one-time token, then stores the returned public URL in the form.
 const MAX = 10 * 1024 * 1024;
-const FOLDERS = ["trips", "articles", "destinations", "nganya", "gallery"] as const;
+const FOLDERS = ["trips", "articles", "destinations", "nganya", "gallery", "shop"] as const;
 export async function POST(req: Request) {
   const u = await requireRole(["SUPER_ADMIN", "ADMIN", "CONTENT_EDITOR", "BOOKING_MANAGER"]);
   if (!u) return NextResponse.json({ error: "Forbidden" }, { status: 403 });

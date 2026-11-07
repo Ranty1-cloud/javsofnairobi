@@ -23,8 +23,8 @@ const ICON: Record<string, string> = {
 };
 const GROUPS: { title: string; links: [href: string, label: string, icon: keyof typeof ICON][] }[] = [
   { title: "Overview", links: [["/admin", "Dashboard", "grid"], ["/admin/analytics", "Analytics", "chart"]] },
-  { title: "Content", links: [["/admin/events", "Events", "calendar"], ["/admin/vehicles", "Vehicles", "bus"], ["/admin/articles", "Articles", "doc"], ["/admin/destinations", "Destinations", "route"], ["/admin/nganya", "Nganya", "star"], ["/admin/gallery", "Gallery", "photos"], ["/admin/site", "Homepage photo", "image"]] },
-  { title: "Operations", links: [["/admin/payments", "Payments", "card"], ["/admin/moderation", "Moderation", "shield"], ["/admin/scan", "Scan tickets", "scan"], ["/admin/boarding", "Boarding lists", "list"], ["/admin/waitlist", "Waitlists", "clock"]] },
+  { title: "Content", links: [["/admin/events", "Events", "calendar"], ["/admin/vehicles", "Vehicles", "bus"], ["/admin/articles", "Articles", "doc"], ["/admin/destinations", "Destinations", "route"], ["/admin/nganya", "Nganya", "star"], ["/admin/shop", "Shop products", "tag"], ["/admin/gallery", "Gallery", "photos"], ["/admin/site", "Homepage photo", "image"]] },
+  { title: "Operations", links: [["/admin/payments", "Payments", "card"], ["/admin/orders", "Shop orders", "list"], ["/admin/moderation", "Moderation", "shield"], ["/admin/scan", "Scan tickets", "scan"], ["/admin/boarding", "Boarding lists", "list"], ["/admin/waitlist", "Waitlists", "clock"]] },
   { title: "Growth & access", links: [["/admin/promos", "Promo codes", "tag"], ["/admin/staff", "Staff & roles", "users"], ["/admin/audit", "Audit log", "log"]] },
 ];
 const Icon = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>;
