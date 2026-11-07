@@ -4,12 +4,12 @@ import { TILL, STK_ENABLED } from "@/lib/pay";
 import { planSeats, type Plan } from "@/lib/layout";
 type Seat = { label: string; priceKes: number; status: string };
 const rowOf = (l: string) => l.replace(/\d+$/, ""), numOf = (l: string) => Number(l.replace(/\D/g, ""));
-export default function SeatMap({ tripId, seats, fee, plan }: { tripId: string; seats: Seat[]; fee: number; plan?: Plan }) {
+export default function SeatMap({ tripId, seats, fee, plan, signedIn, email: accountEmail, next }: { tripId: string; seats: Seat[]; fee: number; plan?: Plan; signedIn: boolean; email: string; next: string }) {
   const [step, setStep] = useState(1);
   const [sel, setSel] = useState<string[]>([]);
   const [until, setUntil] = useState<number | null>(null);
   const [left, setLeft] = useState(0);
-  const [phone, setPhone] = useState(""), [email, setEmail] = useState(""), [promo, setPromo] = useState("");
+  const [phone, setPhone] = useState(""), [promo, setPromo] = useState("");
   const [names, setNames] = useState<Record<string, string>>({});
   const [optIn, setOptIn] = useState(true), [busy, setBusy] = useState(false), [msg, setMsg] = useState("");
   const rows = useMemo(() => {
@@ -28,11 +28,12 @@ export default function SeatMap({ tripId, seats, fee, plan }: { tripId: string; 
   }, [until]);
   const seatBtn = (s: Seat) => {
     const mine = sel.includes(s.label), cls = mine ? "sel" : s.status === "BOOKED" ? "taken" : s.status === "RESERVED" ? "hold" : "";
-    return <button key={s.label} className={`seat ${cls} ${s.priceKes > base ? "prem" : ""}`} disabled={!mine && s.status !== "AVAILABLE"} aria-pressed={mine} aria-label={`Seat ${s.label}, ${s.priceKes} shillings, ${mine ? "selected" : s.status === "AVAILABLE" ? "available" : "unavailable"}`} onClick={() => toggle(s)}>{s.label}</button>;
+    return <button key={s.label} className={`seat ${cls} ${s.priceKes > base ? "prem" : ""}`} disabled={!signedIn || (!mine && s.status !== "AVAILABLE")} aria-pressed={mine} aria-label={`Seat ${s.label}, ${s.priceKes} shillings, ${mine ? "selected" : s.status === "AVAILABLE" ? "available" : "unavailable"}`} onClick={() => toggle(s)}>{s.label}</button>;
   };
   const chosen = seats.filter(s => sel.includes(s.label));
   const subtotal = chosen.reduce((a, s) => a + s.priceKes, 0), sum = subtotal + (sel.length ? fee : 0);
   async function toggle(s: Seat) {
+    if (!signedIn) return;
     if (s.status !== "AVAILABLE" && !sel.includes(s.label)) return;
     if (sel.includes(s.label)) {
       await fetch("/api/seats/release", { method: "POST", body: JSON.stringify({ tripId, labels: [s.label] }) });
@@ -45,7 +46,7 @@ export default function SeatMap({ tripId, seats, fee, plan }: { tripId: string; 
   }
   async function pay(method: "stk" | "manual") {
     setBusy(true); setMsg("");
-    const r = await fetch("/api/payments/mpesa/stk", { method: "POST", body: JSON.stringify({ tripId, labels: sel, phone, email: email || undefined, passengers: sel.map(label => ({ label, name: names[label] ?? "" })), whatsappOptIn: optIn, promoCode: promo || undefined, method }) });
+    const r = await fetch("/api/payments/mpesa/stk", { method: "POST", body: JSON.stringify({ tripId, labels: sel, phone, passengers: sel.map(label => ({ label, name: names[label] ?? "" })), whatsappOptIn: optIn, promoCode: promo || undefined, method }) });
     const j = await r.json();
     if (r.ok) window.location.href = `/booking/${j.id}`; else { setMsg(j.error ?? "Could not start payment"); setBusy(false); }
   }
@@ -55,6 +56,7 @@ export default function SeatMap({ tripId, seats, fee, plan }: { tripId: string; 
     <div className="two">
       <div>
         <div className="steps" aria-label="Booking progress">{["1 · Seats", "2 · Passengers", "3 · Review & pay"].map((l, i) => <div key={l} className={step > i ? "done" : ""}>{l}</div>)}</div>
+        {!signedIn && <div className="gate" role="note"><div><b>Log in to book</b><p className="mut" style={{ margin: "4px 0 0" }}>You need a free account to book seats. It keeps your tickets in one place. You can look at the seats below first.</p></div><div className="gate-acts"><a className="btn sm" href={`/login?next=${encodeURIComponent(next)}`}>Log in</a><a className="btn ghost sm" href={`/register?next=${encodeURIComponent(next)}`}>Create account</a></div></div>}
         {until && <div className="hold-timer" role="timer">Seats held for you: <b>{mm}</b></div>}
         {msg && <p className="note" role="status">{msg}</p>}
         {step === 1 && <>
@@ -77,7 +79,7 @@ export default function SeatMap({ tripId, seats, fee, plan }: { tripId: string; 
           <h3>Passenger details</h3>
           {sel.map(l => <div key={l}><label htmlFor={`n${l}`}>Seat {l} passenger name</label><input id={`n${l}`} autoComplete="name" value={names[l] ?? ""} onChange={e => setNames({ ...names, [l]: e.target.value })} /></div>)}
           <label htmlFor="ph">M-Pesa / WhatsApp number</label><input id="ph" inputMode="tel" placeholder="07XX XXX XXX" value={phone} onChange={e => setPhone(e.target.value.replace(/\s/g, ""))} />
-          <label htmlFor="em">Email (optional)</label><input id="em" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+          <p className="mut" style={{ fontSize: ".85rem", margin: "4px 0" }}>Your booking is saved to your account ({accountEmail}).</p>
           <label htmlFor="pr">Promo code (optional)</label><input id="pr" value={promo} onChange={e => setPromo(e.target.value)} />
           <label><input type="checkbox" checked={optIn} onChange={e => setOptIn(e.target.checked)} />Send my tickets to this number on WhatsApp</label>
         </div>}

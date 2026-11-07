@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getSession, requireRole, STAFF } from "@/lib/session";
 import { db } from "@/lib/db";
 import AutoRefresh from "@/components/AutoRefresh";
 import { TILL } from "@/lib/pay";
@@ -7,7 +8,9 @@ import ManualPay from "@/components/ManualPay";
 export const dynamic = "force-dynamic";
 export default async function Booking({ params }: { params: { id: string } }) {
   const b = await db.booking.findUnique({ where: { id: params.id }, include: { trip: true, seats: true, tickets: true, payments: true } });
-  if (!b) notFound();
+  const me = await getSession();
+  if (!me) redirect(`/login?next=${encodeURIComponent("/booking/" + params.id)}`);
+  if (!b || (b.userId !== me.userId && !(await requireRole(STAFF)))) notFound();
   const pay = b.payments[b.payments.length - 1];
   const msg: Record<string, string> = { PENDING: "Waiting for your M-Pesa payment. Enter your PIN on the prompt sent to your phone.", CONFIRMED: "Payment confirmed. Your tickets are ready.", EXPIRED: "This booking expired before payment. Your seats were released.", CANCELLED: "This booking was cancelled." };
   return (

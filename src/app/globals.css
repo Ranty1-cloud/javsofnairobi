@@ -201,3 +201,4 @@ body{overflow-x:clip}
 /* payment step */
 .paybox{background:var(--black);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px}
 .soon{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:12px 14px;border:1px dashed var(--amber);border-radius:12px;font-size:.88rem;color:var(--mut)}.soon b{color:#fff}
+.gate{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);border:1px solid var(--red);border-radius:14px;padding:14px 16px;margin-bottom:14px}.gate-acts{display:flex;gap:8px}
