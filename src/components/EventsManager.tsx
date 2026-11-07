@@ -72,7 +72,7 @@ export default function EventsManager({ rows }: { rows: EventRow[] }) {
 
   async function setPublished(ids: string[], published: boolean) {
     if (!ids.length) return;
-    if (published && rows.some(r => ids.includes(r.id) && r.placeholder) && !confirm("Some of these events still have placeholder text, like \"Sample trip for testing\" in the description. Publish anyway? You can edit them after.")) return;
+    if (published && rows.some(r => ids.includes(r.id) && r.placeholder) && !confirm("Some of these events are unreviewed drafts. Publish anyway? You can edit them after.")) return;
     setBusy(true); setMsg(null);
     const { ok, j } = await call("/api/admin/events", "PATCH", { ids, published });
     setBusy(false);

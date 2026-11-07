@@ -6,7 +6,7 @@ Adventure travel, road trips and Nganya culture platform. Next.js 14 (App Router
 cp .env.example .env          # set DATABASE_URL, the 3 SUPABASE vars (see Auth), CRON_SECRET, APP_URL
 npm install
 npx prisma migrate dev --name supabase_auth
-npm run db:seed               # sample data, clearly labelled "Sample"
+npm run db:seed               # demo trips for local development
 npm run admin:create -- you@example.com 'a-long-password' 'Your Name'   # first Super Admin (Supabase login + SUPER_ADMIN role)
 npm run dev
 ```
