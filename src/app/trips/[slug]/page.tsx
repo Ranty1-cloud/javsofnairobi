@@ -40,7 +40,7 @@ export default async function TripPage({ params }: { params: { slug: string } })
           <div><small>Type</small>{TYPE_LABEL[trip.tripType] ?? trip.tripType}{trip.durationLabel && ` · ${trip.durationLabel}`}</div>
           <div><small>From</small><span className="price">{ksh(trip.priceKes)}</span>{trip.bookingFeeKes > 0 && <span className="mut"> + {ksh(trip.bookingFeeKes)} fee</span>}</div>
           <div><small>Vehicle</small>{trip.vehicle.name}</div><div><small>Seats left</small>{left}</div>
-          {!past && <div><small>Departs in</small><Countdown to={trip.departsAt.toISOString()} /></div>}
+          {!past && <div className="span"><small>Departs in</small><Countdown to={trip.departsAt.toISOString()} /></div>}
         </div>
         {!past && <ShareButtons title={trip.title} line={`${fmtDate(trip.departsAt)} · ${fmtTime(trip.departsAt)} · From ${ksh(trip.priceKes)}${left > 0 ? ` · ${left} seats left` : ""}`} />}
         {trip.summary && <p className="prose" style={{ maxWidth: 760 }}>{trip.summary}</p>}

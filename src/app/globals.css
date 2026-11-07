@@ -74,7 +74,7 @@ label{font-size:.85rem;color:var(--mut)}
 .page-hero{position:relative;min-height:46vh;display:flex;align-items:end;isolation:isolate;overflow:hidden;border-bottom:1px solid var(--line)}
 .page-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:.5}.page-hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,var(--black),rgba(5,5,5,.35))}
 .page-hero h1{font-size:clamp(2.6rem,7vw,5.5rem);margin:6px 0 10px}
-.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:24px 0}.facts div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}.facts small{display:block;color:var(--mut);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:24px 0}.facts>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}.facts>.span{grid-column:1/-1}.facts small{display:block;color:var(--mut);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
 .two{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:start}@media(max-width:900px){.two{grid-template-columns:1fr}}
 /* booking steps + seats */
 .steps{display:flex;gap:6px;margin-bottom:22px}.steps div{flex:1;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);border-top:3px solid var(--line);padding-top:8px}.steps .done{border-color:var(--red);color:#fff}
