@@ -3,6 +3,7 @@
 //  2. Transactional emails (booking confirmation + PDF ticket): sent by the `send-email` Edge Function in supabase/functions.
 // Supabase has no generic "send any email" API, so that function delivers through Resend using a key kept as a Supabase secret.
 // The Next.js app never holds mail credentials. We never pretend a mail went out: failures come back as { ok: false }.
+import { SITE } from "./seo";
 export type MailAttachment = { filename: string; content: Buffer; contentType?: string };
 
 export const emailConfigured = () => !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -30,5 +31,5 @@ export async function sendMail(m: { to: string; subject: string; text: string; h
 }
 
 // Shared dark-on-white-safe layout. Inline styles only, because mail clients ignore stylesheets.
-export const shell = (title: string, inner: string) => `<!doctype html><html><body style="margin:0;background:#050505;font-family:Arial,Helvetica,sans-serif;color:#fff"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="560" style="max-width:560px;background:#111;border:1px solid #292929;border-radius:14px;overflow:hidden"><tr><td style="background:#E50914;padding:14px 22px;font-weight:800;letter-spacing:2px">JAVS OF NAIROBI</td></tr><tr><td style="padding:22px"><h2 style="margin:0 0 12px">${esc(title)}</h2>${inner}</td></tr><tr><td style="padding:14px 22px;border-top:1px solid #292929;color:#A1A1A1;font-size:12px">TRAVEL. EXPERIENCE. CONNECT. · Nairobi, Kenya</td></tr></table></td></tr></table></body></html>`;
+export const shell = (title: string, inner: string) => `<!doctype html><html><body style="margin:0;background:#050505;font-family:Arial,Helvetica,sans-serif;color:#fff"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="560" style="max-width:560px;background:#111;border:1px solid #292929;border-radius:14px;overflow:hidden"><tr><td style="background:#E50914;padding:12px 22px"><img src="${SITE}/icons/icon-192.png" width="48" height="48" alt="JAVS OF NAIROBI" style="display:block;border:0;border-radius:10px"></td></tr><tr><td style="padding:22px"><h2 style="margin:0 0 12px">${esc(title)}</h2>${inner}</td></tr><tr><td style="padding:14px 22px;border-top:1px solid #292929;color:#A1A1A1;font-size:12px">TRAVEL. EXPERIENCE. CONNECT. · Nairobi, Kenya</td></tr></table></td></tr></table></body></html>`;
 export const button = (href: string, label: string) => `<p><a href="${esc(href)}" style="display:inline-block;background:#E50914;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:700">${esc(label)}</a></p>`;

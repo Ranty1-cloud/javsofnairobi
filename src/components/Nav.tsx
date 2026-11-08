@@ -14,7 +14,7 @@ export default function Nav() {
     <>
       <header className="nav">
         <div className="nav-in">
-          <Link href="/" className="logo" aria-label="JAVS OF NAIROBI home">JAVS <span className="red">OF NAIROBI</span></Link>
+          <Link href="/" className="logo-img" aria-label="JAVS OF NAIROBI home">{/* eslint-disable-next-line @next/next/no-img-element */}<img src="/icons/icon-192.png" width={48} height={48} alt="JAVS OF NAIROBI" /></Link>
           <nav className="nav-links" aria-label="Main">{LINKS.map(([n, h]) => <Link key={h} href={h} className={on(h) ? "on" : ""}>{n}</Link>)}</nav>
           <form className="nav-search" action="/trips" role="search"><input name="q" placeholder="Search trips" aria-label="Search trips" /></form>
           {wa && <a className="btn ghost sm nav-cta" href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer">WhatsApp</a>}

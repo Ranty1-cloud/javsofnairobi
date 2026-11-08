@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
-// Styled QR: round dots, rounded corner "eyes" with a red centre, and a small J badge in the middle.
-// Error correction is level H (30% recoverable), so the badge and the styling never stop phones or the scanner reading it.
+// Styled QR: round dots, rounded corner "eyes" with a red centre, and the official logo in the middle.
+// Error correction is level H (30% recoverable), so the logo and the styling never stop phones or the scanner reading it.
 // The code carries only the opaque ticket token, never passenger data.
 export const QUIET = 2;
 export function qrLayout(token: string) {
@@ -22,6 +22,6 @@ export function qrSvg(token: string, o: { fg?: string; accent?: string; bg?: str
   const dots = L.dots.map(([r, c]) => `<circle cx="${c + m + 0.5}" cy="${r + m + 0.5}" r="0.47"/>`).join("");
   const eyes = L.eyes.map(([r, c]) => `<g transform="translate(${c + m} ${r + m})"><g fill="${fg}">${rr(0, 0, 7, 2)}</g><g fill="${bg}">${rr(1, 1, 5, 1.4)}</g><g fill="${accent}">${rr(2, 2, 3, 0.9)}</g></g>`).join("");
   const cx = L.mid + m + 0.5;
-  const badge = L.half ? `<circle cx="${cx}" cy="${cx}" r="3.2" fill="${bg}"/><circle cx="${cx}" cy="${cx}" r="2.7" fill="${accent}"/><text x="${cx}" y="${cx + 1.2}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="3.4" fill="#fff">J</text>` : "";
+  const badge = L.half ? `<rect x="${cx - 3.5}" y="${cx - 3.5}" width="7" height="7" fill="${bg}"/><image href="/icons/icon-192.png" x="${cx - 3.2}" y="${cx - 3.2}" width="6.4" height="6.4"/>` : "";
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${L.total} ${L.total}" shape-rendering="geometricPrecision" role="img" aria-label="Ticket QR code"><rect width="${L.total}" height="${L.total}" fill="${bg}"/><g fill="${fg}">${dots}</g>${eyes}${badge}</svg>`;
 }
