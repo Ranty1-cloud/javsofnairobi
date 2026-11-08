@@ -4,8 +4,11 @@ import SubmitForm from "@/components/SubmitForm";
 import TripCard from "@/components/TripCard";
 import GalleryGrid from "@/components/GalleryGrid";
 import { toCard, tripInclude, liveArticles } from "@/lib/queries";
+import JsonLd from "@/components/JsonLd";
+import { pageMeta, webPageLd, breadcrumbLd, graph } from "@/lib/seo";
 export const revalidate = 60;
-export const metadata = { title: "Nganya Culture", description: "Kenyan matatu culture: news, showcases, events and community stories." };
+const DESC = "Nganya culture in Kenya: customised matatus and their crews, showcases, events, news and photos from Nairobi's matatu scene.";
+export const metadata = pageMeta({ title: "Nganya Culture", description: DESC, path: "/nganya" });
 export default async function Nganya() {
   const [profiles, photos, news, trips] = await Promise.all([
     db.nganyaProfile.findMany({ orderBy: { createdAt: "desc" } }),
@@ -17,6 +20,7 @@ export default async function Nganya() {
   const hero = heroImg ? `linear-gradient(180deg,rgba(5,5,5,.5),rgba(5,5,5,.9)), radial-gradient(900px 500px at 80% 20%,rgba(229,9,20,.25),transparent 60%), url("${encodeURI(heroImg)}") center/cover` : "radial-gradient(900px 500px at 80% 20%,rgba(229,9,20,.3),transparent 60%)";
   return (
     <>
+      <JsonLd data={graph(webPageLd({ path: "/nganya", name: "Nganya Culture", description: DESC, type: "CollectionPage" }), breadcrumbLd([{ name: "Home", path: "/" }, { name: "Nganya Culture", path: "/nganya" }]))} />
       <section className="page-hero" style={{ minHeight: "52vh", background: hero }}>
         <div className="wrap" style={{ width: "100%" }}><p className="eyebrow">Matatu culture</p><h1 className="disp" style={{ fontSize: "clamp(4rem,13vw,10rem)", lineHeight: .88 }}>NGANYA<br /><span className="red">CULTURE</span></h1><p className="mut" style={{ maxWidth: 560 }}>Art on wheels, sound that shakes the street, and crews that make Nairobi move. News, showcases, events and community stories.</p></div>
       </section>

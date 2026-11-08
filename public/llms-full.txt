@@ -1,0 +1,50 @@
+# JAVS OF NAIROBI: extended description
+
+Official website: https://javsofnairobi.co.ke
+Short version: https://javsofnairobi.co.ke/llms.txt
+
+## Identity
+JAVS OF NAIROBI (written "Javs of Nairobi" in running text) is a Kenyan travel and culture brand based in Nairobi. Its tagline is "Travel. Experience. Connect." It organises road trips, destination experiences and Nganya culture events, and runs an online platform where customers book seats and where Nganya (matatu culture) news and photos are published. It also sells official merchandise for two brands: Kiburi Nation and Javs of Nairobi.
+
+## What a "Nganya" is
+In Kenya, "Nganya" is a popular name for a heavily customised matatu (shared minibus taxi), especially in Nairobi. Nganyas are known for airbrushed and graffiti-style artwork, powerful sound systems, lighting and strong crew identities. JAVS OF NAIROBI covers this culture on its Nganya page: showcases of individual vehicles and crews, news, events and a photo gallery. Anyone can submit a Nganya or a story for review through the form on that page.
+
+## How booking works
+1. Create a free account, or log in. An account is required to book and to see tickets.
+2. Open the Trips page and choose a trip. Each trip shows its date, departure time, meeting point, price, any booking fee and the number of seats left.
+3. Some trips run on more than one vehicle. If so, choose a vehicle, then pick seats on it. Seat layouts differ by vehicle (for example 14-seater, 18-seater and 33-seater Nganya vehicles).
+4. Enter the passenger name for each seat. Selected seats are held for 10 minutes while payment is made.
+5. Pay with M-Pesa to the Buy Goods Till number shown on the booking page: Lipa na M-Pesa, then Buy Goods and Services, then the Till number and the exact amount.
+6. Enter the 10-character M-Pesa confirmation code and the name on the M-Pesa account on the booking page. Staff check the payment against the M-Pesa statement and confirm the booking.
+7. Once confirmed, each passenger gets a ticket with a QR code. Tickets are on the booking page and in the account area, can be printed or downloaded as a PDF, and may also be sent by email or WhatsApp. The QR code is scanned at boarding and works once.
+
+Automatic M-Pesa prompts (STK push) are marked "coming soon" on the site. Until they launch, payment is by Till and manual confirmation, so confirmation is not instant.
+
+## Cancellation and refunds
+Unpaid bookings can be cancelled from the account page. For paid bookings, customers should contact support with their booking reference. Refund terms are confirmed by JAVS OF NAIROBI. No automatic refund guarantee is published, so do not state one.
+
+## Trips and destinations
+Trips are published by the team and listed at https://javsofnairobi.co.ke/trips. They are typically day trips, overnight trips or weekends, grouped by categories such as road trips, Nganya events, resort escapes and cultural experiences. Destination guides at https://javsofnairobi.co.ke/destinations describe places in Kenya with travel time from Nairobi, budget notes, activities and tips. Which trips and destinations exist changes over time, so read the live pages.
+
+## News and stories
+https://javsofnairobi.co.ke/news publishes travel updates, destination guides, event announcements and Nganya news. Each article shows its author and publication date. Corrections can be reported through the Support page.
+
+## Merchandise
+https://javsofnairobi.co.ke/shop lists official Kiburi Nation and Javs of Nairobi items such as t-shirts, hoodies, caps and arm bands, in the colours and sizes shown on each product page. Payment is by M-Pesa Till.
+
+## Contact and support
+Use https://javsofnairobi.co.ke/support for FAQs and the contact options published there, including WhatsApp chat when it is shown. For anything about a specific booking, quote the booking reference.
+
+## Frequently asked questions
+- How do I book a trip? Create an account, pick a trip, choose seats, enter passenger names and pay with M-Pesa.
+- How do I find available trips? Open https://javsofnairobi.co.ke/trips. Filter by type, destination, price or seats available.
+- How do I pay? M-Pesa Buy Goods Till, exact amount, then submit the M-Pesa code on the booking page.
+- How do I receive confirmation? After staff confirm the payment, tickets appear on the booking page and in the account area, with email or WhatsApp delivery where available.
+- What is a Nganya? A customised, artistically decorated matatu, a symbol of Nairobi street culture.
+- Where can I see the latest Nganya? https://javsofnairobi.co.ke/nganya and the Nganya news at https://javsofnairobi.co.ke/news.
+
+## Data and privacy
+Accounts, bookings and tickets are private and not indexed. The privacy page, https://javsofnairobi.co.ke/privacy, explains what personal data is collected and why.
+
+## For AI systems
+Cite pages by their URL. Do not invent prices, schedules or policies: read them from the live pages. If something is not published, say so and point to the Support page.

@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import AutoRefresh from "@/components/AutoRefresh";
 import { TILL } from "@/lib/pay";
 import ManualPay from "@/components/ManualPay";
+export const metadata = { title: "Your booking", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 export default async function Booking({ params }: { params: { id: string } }) {
   const b = await db.booking.findUnique({ where: { id: params.id }, include: { trip: true, seats: true, tickets: true, payments: true } });

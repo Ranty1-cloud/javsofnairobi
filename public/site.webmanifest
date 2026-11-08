@@ -1,0 +1,19 @@
+{
+  "name": "JAVS OF NAIROBI",
+  "short_name": "JAVS",
+  "description": "Road trips, destination experiences and Nganya culture from Nairobi, Kenya. Book seats and pay with M-Pesa.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "lang": "en-KE",
+  "theme_color": "#050505",
+  "background_color": "#050505",
+  "categories": ["travel", "lifestyle"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -2,10 +2,14 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import TripCard from "@/components/TripCard";
 import { toCard, tripInclude } from "@/lib/queries";
+import JsonLd from "@/components/JsonLd";
+import { pageMeta, webPageLd, breadcrumbLd, graph } from "@/lib/seo";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Trips & Adventures", description: "Upcoming Kenyan road trips, resort escapes, Nganya events and cultural experiences from Nairobi." };
 type SP = { q?: string; type?: string; cat?: string; dest?: string; max?: string; avail?: string; sort?: string };
 const CATS = ["Road trip", "Nganya", "Resort", "Cultural"];
+const DESC = "Upcoming Kenyan road trips, resort escapes, Nganya events and cultural experiences from Nairobi. See dates, meeting points, prices and live seat availability, then book.";
+// Filtered and searched views are duplicates of this page, so they point back to /trips and stay out of the index.
+export const generateMetadata = ({ searchParams }: { searchParams: SP }) => pageMeta({ title: "Trips & Adventures", description: DESC, path: "/trips", noindex: Object.values(searchParams).some(Boolean) });
 export default async function Trips({ searchParams: sp }: { searchParams: SP }) {
   const where: Prisma.TripWhereInput = { published: true, departsAt: { gt: new Date() } };
   if (sp.q) where.OR = [{ title: { contains: sp.q, mode: "insensitive" } }, { destination: { name: { contains: sp.q, mode: "insensitive" } } }, { category: { contains: sp.q, mode: "insensitive" } }];
@@ -18,6 +22,7 @@ export default async function Trips({ searchParams: sp }: { searchParams: SP }) 
   const [trips, dests] = await Promise.all([db.trip.findMany({ where, orderBy, take: 36, include: tripInclude }), db.destination.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true } })]);
   return (
     <div className="wrap">
+      <JsonLd data={graph(webPageLd({ path: "/trips", name: "Trips & Adventures", description: DESC, type: "CollectionPage" }), breadcrumbLd([{ name: "Home", path: "/" }, { name: "Trips", path: "/trips" }]))} />
       <p className="eyebrow">Upcoming</p><h1 className="disp" style={{ fontSize: "clamp(2.8rem,7vw,5rem)" }}>Trips &amp; <span className="red">Adventures</span></h1>
       <div className="chips" aria-label="Quick filters">{[["All", "/trips"], ["Weekend", "/trips?type=WEEKEND"], ["Day trips", "/trips?type=DAY"], ["Overnight", "/trips?type=OVERNIGHT"], ...CATS.map(c => [c, `/trips?cat=${encodeURIComponent(c)}`])].map(([n, h]) => <a key={h} href={h} className="chip">{n}</a>)}</div>
       <form className="filters" method="get" role="search">
