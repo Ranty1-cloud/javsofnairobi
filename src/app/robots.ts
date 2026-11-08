@@ -5,7 +5,7 @@ import { SITE } from "@/lib/seo";
 // Names checked against OpenAI's published crawler list (OAI-SearchBot, GPTBot, ChatGPT-User); the others are the vendors' documented tokens.
 const PRIVATE = ["/admin", "/api/", "/account", "/booking/", "/ticket/", "/shop/cart", "/shop/orders", "/auth/", "/reset", "/forgot"];
 const SEARCH_AND_AI = [
-  "Googlebot", "Bingbot", "DuckDuckBot", "Applebot",                                   // classic search
+  "Googlebot", "Googlebot-Image", "Bingbot", "DuckDuckBot", "Applebot",                                   // classic search
   "OAI-SearchBot", "ChatGPT-User", "GPTBot",                                           // OpenAI: ChatGPT search, user-requested visits, training
   "PerplexityBot", "Perplexity-User",                                                  // Perplexity: search index, user-requested visits
   "ClaudeBot", "Claude-SearchBot", "Claude-User",                                      // Anthropic
