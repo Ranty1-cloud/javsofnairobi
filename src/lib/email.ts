@@ -1,7 +1,7 @@
 // Email goes through Supabase. Two paths, both owned by your Supabase project:
 //  1. Auth emails (sign-up confirmation, invites, password reset): sent by Supabase Auth itself, nothing in this file.
 //  2. Transactional emails (booking confirmation + PDF ticket): sent by the `send-email` Edge Function in supabase/functions.
-// Supabase has no generic "send any email" API, so that function delivers through Resend using a key kept as a Supabase secret.
+// Supabase has no generic "send any email" API, so that function delivers through Brevo (or Resend) using a key kept as a Supabase secret.
 // The Next.js app never holds mail credentials. We never pretend a mail went out: failures come back as { ok: false }.
 import { SITE } from "./seo";
 export type MailAttachment = { filename: string; content: Buffer; contentType?: string };
