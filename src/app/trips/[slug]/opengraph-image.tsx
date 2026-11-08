@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { db } from "@/lib/db";
 import { fmtDate, fmtTime, ksh } from "@/lib/format";
+import { LOGO_DATA_URI } from "@/lib/brand-logo";
 // The preview card WhatsApp, Instagram, Facebook and X show when someone shares a trip link.
 export const alt = "JAVS OF NAIROBI trip";
 export const size = { width: 1200, height: 630 };
@@ -16,7 +17,7 @@ export default async function Card({ params }: { params: { slug: string } }) {
         <div style={{ position: "absolute", inset: 0, display: "flex", background: "linear-gradient(90deg, rgba(5,5,5,.96) 0%, rgba(5,5,5,.82) 55%, rgba(5,5,5,.35) 100%)" }} />
         <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 14, background: "#E50914", display: "flex" }} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "56px 72px", width: "100%", position: "relative" }}>
-          <div style={{ display: "flex", fontSize: 34, fontWeight: 800, letterSpacing: 6 }}>JAVS<span style={{ color: "#E50914", marginLeft: 14 }}>OF NAIROBI</span></div>
+          <div style={{ display: "flex" }}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={LOGO_DATA_URI} alt="" width={104} height={104} /></div>
           {live ? (
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", fontSize: 26, color: "#E50914", letterSpacing: 4, fontWeight: 700, marginBottom: 14 }}>{t.destination.name.toUpperCase()}</div>

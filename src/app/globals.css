@@ -25,7 +25,7 @@ label{font-size:.85rem;color:var(--mut)}
 /* nav */
 .nav{position:sticky;top:0;z-index:50;background:rgba(5,5,5,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .nav-in{display:flex;align-items:center;gap:22px;height:var(--nav);padding:0 clamp(16px,4vw,48px);max-width:1600px;margin:0 auto}
-.logo{font:400 1.7rem var(--font-bebas),sans-serif;letter-spacing:.08em;margin-right:auto;white-space:nowrap}
+.logo-img{display:flex;align-items:center;margin-right:auto;flex:none}.logo-img img{width:48px;height:48px;display:block}
 .nav-links{display:flex;gap:20px;align-items:center}.nav-links a{font-size:.88rem;color:var(--mut);padding:6px 0;border-bottom:2px solid transparent}
 .nav-links a:hover{color:#fff}.nav-links a.on{color:#fff;border-color:var(--red)}
 .nav-search{display:flex;align-items:center}.nav-search input{margin:0;width:150px;min-height:36px;padding:6px 12px;border-radius:99px;font-size:.85rem}

@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { db } from "./db";
 import { fmtDate, fmtTime } from "./format";
 import { qrLayout, QUIET } from "./ticket-qr";
+import { LOGO_PNG_B64 } from "./brand-logo";
 export type TicketData = { token: string; passenger: string; seat: string; vehicle: string; reference: string; title: string; departsAt: Date; meetingPoint: string; paid: boolean };
 const include = { seat: { include: { tripVehicle: { select: { name: true } } } }, booking: { include: { trip: true, payments: true } } } as const;
 const shape = (t: { token: string; passengerName: string; seat: { label: string; tripVehicle?: { name: string } | null }; booking: { reference: string; payments: { status: string }[]; trip: { title: string; departsAt: Date; meetingPoint: string } } }): TicketData => ({
@@ -26,13 +27,15 @@ export async function renderTicketsPdf(tickets: TicketData[]) {
   // Light, ink-friendly boarding pass: prints cleanly on any home or office printer.
   const W = 360, H = 640, red = rgb(0.898, 0.035, 0.078), ink = rgb(0.04, 0.04, 0.04), white = rgb(1, 1, 1), grey = rgb(0.45, 0.45, 0.45), line = rgb(0.85, 0.85, 0.85);
   const rrect = (w: number) => (r: number) => `M ${r} 0 H ${w - r} A ${r} ${r} 0 0 1 ${w} ${r} V ${w - r} A ${r} ${r} 0 0 1 ${w - r} ${w} H ${r} A ${r} ${r} 0 0 1 0 ${w - r} V ${r} A ${r} ${r} 0 0 1 ${r} 0 Z`;
+  const logo = await pdf.embedPng(Buffer.from(LOGO_PNG_B64, "base64"));
   for (const t of tickets) {
     const p = pdf.addPage([W, H]);
     p.drawRectangle({ x: 0, y: 0, width: W, height: H, color: white });
     p.drawRectangle({ x: 0, y: H - 78, width: W, height: 78, color: ink });
     p.drawRectangle({ x: 0, y: H - 82, width: W, height: 4, color: red });
-    p.drawText("JAVS OF NAIROBI", { x: 24, y: H - 40, size: 18, font: bold, color: white });
-    p.drawText("BOARDING PASS", { x: 24, y: H - 58, size: 8, font: reg, color: rgb(0.7, 0.7, 0.7) });
+    p.drawImage(logo, { x: 24, y: H - 66, width: 54, height: 54 });
+    p.drawText("BOARDING PASS", { x: 90, y: H - 40, size: 15, font: bold, color: white });
+    p.drawText("TRAVEL. EXPERIENCE. CONNECT.", { x: 90, y: H - 55, size: 6.5, font: reg, color: rgb(0.7, 0.7, 0.7) });
     const tag = t.paid ? "PAID" : "PENDING", tw = bold.widthOfTextAtSize(tag, 10);
     p.drawRectangle({ x: W - 24 - tw - 20, y: H - 52, width: tw + 20, height: 22, color: t.paid ? red : rgb(0.85, 0.64, 0) });
     p.drawText(tag, { x: W - 24 - tw - 10, y: H - 45, size: 10, font: bold, color: white });
@@ -65,8 +68,9 @@ export async function renderTicketsPdf(tickets: TicketData[]) {
     }
     if (L.half) {
       const bx = cx(L.mid) + u / 2, by = cy(L.mid) - u / 2;
-      p.drawCircle({ x: bx, y: by, size: u * 3.2, color: white }); p.drawCircle({ x: bx, y: by, size: u * 2.7, color: red });
-      const jw = bold.widthOfTextAtSize("J", u * 3.6); p.drawText("J", { x: bx - jw / 2, y: by - u * 1.2, size: u * 3.6, font: bold, color: white });
+      // The centre of the code is kept empty (7x7 modules); the official logo sits in it.
+      p.drawRectangle({ x: bx - u * 3.5, y: by - u * 3.5, width: u * 7, height: u * 7, color: white });
+      p.drawImage(logo, { x: bx - u * 3.2, y: by - u * 3.2, width: u * 6.4, height: u * 6.4 });
     }
     p.drawText("Show this code at boarding. One scan per ticket.", { x: 24, y: 22, size: 8, font: reg, color: grey });
     p.drawText(`${shortCode(t.token)}`, { x: W - 24 - reg.widthOfTextAtSize(shortCode(t.token), 8), y: 22, size: 8, font: reg, color: grey });
