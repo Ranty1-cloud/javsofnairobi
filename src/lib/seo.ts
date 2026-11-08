@@ -8,7 +8,7 @@ export const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://javsofnairobi.
 export const BRAND = "JAVS OF NAIROBI";
 export const TAGLINE = "Travel. Experience. Connect.";
 export const ORG_DESCRIPTION = "JAVS OF NAIROBI organises road trips, destination experiences and Nganya culture events out of Nairobi, Kenya. Customers create an account, choose seats on a trip and pay with M-Pesa.";
-export const OG_IMAGE = { url: "/og-image.jpg", width: 1200, height: 630, alt: `${BRAND}: ${TAGLINE}` };
+export const OG_IMAGE = { url: "/og-image.jpg?v=2", width: 1200, height: 630, alt: `${BRAND}: ${TAGLINE}` };
 export const abs = (p: string) => (/^https?:\/\//.test(p) ? p : SITE + (p.startsWith("/") ? p : `/${p}`));
 const WA = (process.env.NEXT_PUBLIC_WHATSAPP ?? "").replace(/\D/g, "");
 const SOCIAL = (process.env.NEXT_PUBLIC_SOCIAL_LINKS ?? "").split(",").map(s => s.trim()).filter(s => /^https:\/\//.test(s)); // only confirmed official profiles, comma separated
