@@ -6,8 +6,9 @@ import { fmtDate, fmtTime, site } from "./format";
 // Only ever called for CONFIRMED bookings (confirmPayment verified the payment server-side first).
 export async function notifyEmail(bookingId: string, force = false) {
   const b = await db.booking.findUnique({ where: { id: bookingId }, include: { trip: true, user: true, passengers: true } });
-  const to = b?.guestEmail ?? b?.user?.email;
-  if (!b || b.status !== "CONFIRMED" || !to) return "skipped";
+  // Tickets go to the email typed on the booking and to the account email too, when they differ (usually the customer's Gmail).
+  const to = [...new Set([b?.guestEmail, b?.user?.email].filter((e): e is string => !!e).map(e => e.trim().toLowerCase()))];
+  if (!b || b.status !== "CONFIRMED" || !to.length) return "skipped";
   if (!emailConfigured()) return "not_configured";
   const pack = await ticketsForBooking(bookingId);
   if (!pack) return "skipped";
