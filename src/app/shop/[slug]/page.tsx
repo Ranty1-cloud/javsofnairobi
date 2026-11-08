@@ -4,17 +4,23 @@ import { db } from "@/lib/db";
 import ProductBuy from "@/components/ProductBuy";
 import { BRAND_LABEL, KIND_LABEL } from "@/lib/shop-constants";
 import { ksh } from "@/lib/format";
+import JsonLd from "@/components/JsonLd";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { pageMeta, webPageLd, breadcrumbLd, productLd, graph, clip } from "@/lib/seo";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const p = await db.product.findFirst({ where: { slug: params.slug, active: true }, select: { name: true, brand: true } });
-  return p ? { title: `${p.name} · ${BRAND_LABEL[p.brand]}` } : { title: "Shop" };
+  const p = await db.product.findFirst({ where: { slug: params.slug, active: true }, select: { slug: true, name: true, brand: true, kind: true, description: true, imageUrl: true } });
+  return p ? pageMeta({ title: `${p.name} · ${BRAND_LABEL[p.brand]}`, description: clip(p.description || `${p.name}: official ${BRAND_LABEL[p.brand]} ${KIND_LABEL[p.kind].toLowerCase()}. Pay with M-Pesa.`), path: `/shop/${p.slug}`, image: p.imageUrl }) : { title: "Shop" };
 }
 export default async function Product({ params }: { params: { slug: string } }) {
   const p = await db.product.findFirst({ where: { slug: params.slug, active: true }, include: { variants: { orderBy: { size: "asc" } } } });
   if (!p) notFound();
+  const crumbs = [{ name: "Home", path: "/" }, { name: "Shop", path: "/shop" }, { name: p.name, path: `/shop/${p.slug}` }];
+  const desc = clip(p.description || `${p.name}, official ${BRAND_LABEL[p.brand]} merchandise.`);
   return (
     <>
-      <p className="mut"><Link href="/shop">← All merch</Link></p>
+      <JsonLd data={graph(webPageLd({ path: `/shop/${p.slug}`, name: p.name, description: desc }), breadcrumbLd(crumbs), productLd({ slug: p.slug, name: p.name, brand: BRAND_LABEL[p.brand], description: p.description, priceKes: p.priceKes, imageUrl: p.imageUrl, inStock: p.variants.some(v => v.stock > 0) }))} />
+      <Breadcrumbs items={crumbs} />
       <div className="pdp">
         <div className="pdp-img">{p.imageUrl ? <img src={p.imageUrl} alt={p.name} /> : <div className="pcard-ph">{p.name}</div>}</div>
         <div>

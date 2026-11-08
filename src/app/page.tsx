@@ -6,6 +6,9 @@ import NewsletterForm from "@/components/NewsletterForm";
 import { toCard, upcomingTrips, liveArticles, tripInclude } from "@/lib/queries";
 import { readFeatured } from "@/lib/featured";
 import { fmtDateTime } from "@/lib/format";
+import JsonLd from "@/components/JsonLd";
+import { pageMeta, webPageLd, graph, BRAND, ORG_DESCRIPTION } from "@/lib/seo";
+export const metadata = pageMeta({ title: `${BRAND} | Road trips, destinations & Nganya culture from Nairobi`, absoluteTitle: true, description: "Book seats on road trips and Nganya events out of Nairobi, explore Kenyan destinations and follow matatu culture. Create an account and pay with M-Pesa.", path: "/" });
 // Cached for 60s and refreshed instantly when an admin saves a change (see lib/refresh.ts). Seat counts are re-checked at booking time.
 export const revalidate = 60;
 const wa = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
@@ -28,8 +31,9 @@ export default async function Home() {
   const next = shown[0], heroImg = heroSetting?.value ?? next?.imageUrl ?? gallery[0]?.url;
   return (
     <>
+      <JsonLd data={graph(webPageLd({ path: "/", name: BRAND, description: ORG_DESCRIPTION }))} />
       <section className="hero">
-        <div className="hero-bg">{heroImg && <img src={heroImg} alt="" />}</div>
+        <div className="hero-bg">{heroImg && <img src={heroImg} alt="" fetchPriority="high" decoding="async" />}</div>
         <div className="wrap hero-in" style={{ width: "100%" }}>
           <div className="rise">
             <p className="eyebrow">Travel. Experience. Connect.</p>

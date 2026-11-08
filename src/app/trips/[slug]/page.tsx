@@ -8,7 +8,10 @@ import SeatMap from "@/components/SeatMap";
 import SubmitForm from "@/components/SubmitForm";
 import Countdown from "@/components/Countdown";
 import ShareButtons from "@/components/ShareButtons";
-import { fmtDate, fmtTime, ksh, TYPE_LABEL, site } from "@/lib/format";
+import { fmtDate, fmtTime, ksh, TYPE_LABEL } from "@/lib/format";
+import JsonLd from "@/components/JsonLd";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { pageMeta, webPageLd, breadcrumbLd, tripLd, graph, clip } from "@/lib/seo";
 import type { Layout } from "@/lib/layout";
 export const dynamic = "force-dynamic"; // live seat map
 const bySlug = cache((slug: string) => db.trip.findUnique({ where: { slug }, include: { destination: true, vehicle: { select: { name: true, layout: true } }, tripVehicles: { orderBy: { position: "asc" }, include: { vehicle: { select: { name: true, layout: true } } } }, seats: { orderBy: { label: "asc" } }, reviews: { where: { approved: true }, orderBy: { createdAt: "desc" } } } }));
@@ -16,7 +19,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const t = await bySlug(params.slug);
   if (!t || !t.published) return {};
   const desc = t.summary || `${t.title} to ${t.destination.name}. From ${ksh(t.priceKes)}.`;
-  return { title: t.title, description: desc, openGraph: { title: t.title, description: desc }, twitter: { card: "summary_large_image" } };
+  return pageMeta({ title: t.title, description: clip(desc), path: `/trips/${t.slug}`, image: false }); // image: false keeps this trip's own generated share card (opengraph-image.tsx)
 }
 export default async function TripPage({ params }: { params: { slug: string } }) {
   const trip = await bySlug(params.slug);
@@ -30,11 +33,12 @@ export default async function TripPage({ params }: { params: { slug: string } })
   const groups = vehicles.map((v, i) => ({ id: v.id, name: v.name || v.vehicle.name, prefix: v.prefix, plan: (v.vehicle.layout as unknown as Layout | null)?.plan, seats: seats.filter(s => (s.vid ?? vehicles[0].id) === v.id).map((x: { label: string; priceKes: number; status: string }) => ({ label: x.label, priceKes: x.priceKes, status: x.status })) }));
   const left = seats.filter(s => s.status === "AVAILABLE").length, past = trip.departsAt < now;
   const avg = trip.reviews.length ? trip.reviews.reduce((a, r) => a + r.rating, 0) / trip.reviews.length : 0;
-  const ld = { "@context": "https://schema.org", "@type": "Event", name: trip.title, startDate: trip.departsAt.toISOString(), eventStatus: "https://schema.org/EventScheduled", location: { "@type": "Place", name: trip.meetingPoint, address: "Nairobi, Kenya" }, image: trip.imageUrl ? [trip.imageUrl] : undefined, offers: { "@type": "Offer", price: trip.priceKes, priceCurrency: "KES", availability: left ? "https://schema.org/InStock" : "https://schema.org/SoldOut", url: `${site()}/trips/${trip.slug}` } };
+  const crumbs = [{ name: "Home", path: "/" }, { name: "Trips", path: "/trips" }, { name: trip.title, path: `/trips/${trip.slug}` }];
+  const ld = graph(webPageLd({ path: `/trips/${trip.slug}`, name: trip.title, description: clip(trip.summary || `${trip.title} to ${trip.destination.name}.`) }), breadcrumbLd(crumbs), tripLd({ ...trip, left }));
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, "\\u003c") }} />
-      <section className="page-hero">{trip.imageUrl && <img src={trip.imageUrl} alt="" />}
+      <JsonLd data={ld} />
+      <section className="page-hero">{trip.imageUrl && <img src={trip.imageUrl} alt={trip.title} fetchPriority="high" decoding="async" />}
         <div className="wrap" style={{ width: "100%", paddingBottom: 32 }}>
           <span className="badge red">{trip.category}</span>
           <h1 className="disp">{trip.title}</h1>
@@ -42,6 +46,7 @@ export default async function TripPage({ params }: { params: { slug: string } })
         </div>
       </section>
       <div className="wrap">
+        <Breadcrumbs items={crumbs} />
         <div className="facts">
           <div><small>Departs</small>{fmtTime(trip.departsAt)}</div><div><small>Meeting point</small>{trip.meetingPoint}</div>
           <div><small>Type</small>{TYPE_LABEL[trip.tripType] ?? trip.tripType}{trip.durationLabel && ` · ${trip.durationLabel}`}</div>

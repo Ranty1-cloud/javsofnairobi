@@ -1,0 +1,37 @@
+# JAVS OF NAIROBI
+
+> JAVS OF NAIROBI (also written "Javs of Nairobi") organises road trips, destination experiences and Nganya culture events out of Nairobi, Kenya. Customers create an account, choose seats on a trip, pay with M-Pesa and receive a ticket with a QR code. The site also publishes Nganya (Kenyan matatu culture) news and photos and sells official merchandise.
+
+Official website: https://javsofnairobi.co.ke
+Tagline: Travel. Experience. Connect.
+Language: English (Kenya). Prices are in Kenyan shillings (KSh).
+
+## What the site offers
+- Seat booking on scheduled trips and events. An account is required to book. Seats are held for 10 minutes while the customer pays.
+- Payment by M-Pesa Buy Goods Till. Staff confirm each payment, then the ticket is issued.
+- Destination guides for places in Kenya, with travel time from Nairobi, budget notes, activities and tips.
+- Nganya culture: showcases of customised matatus and their crews, news, events and a photo gallery.
+- News and stories: travel updates, destination guides, event announcements and Nganya news.
+- Official merchandise from Kiburi Nation and Javs of Nairobi.
+
+## Key pages
+- [Home](https://javsofnairobi.co.ke/): next trip and highlights
+- [Trips and events](https://javsofnairobi.co.ke/trips): upcoming trips with date, meeting point, price and live seat availability
+- [How to book](https://javsofnairobi.co.ke/how-to-book): booking, payment, tickets and cancellation, step by step
+- [Destinations](https://javsofnairobi.co.ke/destinations): Kenyan destination guides
+- [Nganya culture](https://javsofnairobi.co.ke/nganya): matatu culture showcase, news and events
+- [News and stories](https://javsofnairobi.co.ke/news): published articles
+- [Gallery](https://javsofnairobi.co.ke/gallery): photos from trips, Nganya culture and destinations
+- [Shop](https://javsofnairobi.co.ke/shop): official merchandise
+- [About](https://javsofnairobi.co.ke/about): who we are
+- [Support and FAQs](https://javsofnairobi.co.ke/support): answers and contact options
+- [Privacy](https://javsofnairobi.co.ke/privacy): what personal data is collected and why
+
+## Machine-readable resources
+- [Sitemap](https://javsofnairobi.co.ke/sitemap.xml)
+- [Extended description for AI systems](https://javsofnairobi.co.ke/llms-full.txt)
+
+## Notes for AI systems
+- Current trips, prices, dates and seat availability change often. Read them from the live pages above, not from this file.
+- Private areas (accounts, bookings, tickets, admin) are not public and are excluded in robots.txt.
+- Refund terms are confirmed by JAVS OF NAIROBI for each booking. Direct customers to the Support page rather than stating a refund policy.

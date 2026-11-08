@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { CancelButton, LogoutButton } from "@/components/BookingButtons";
+export const metadata = { title: "My bookings", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 export default async function Account() {
   const s = await getSession();
