@@ -1,14 +1,14 @@
 // Email goes through Supabase. Two paths, both owned by your Supabase project:
 //  1. Auth emails (sign-up confirmation, invites, password reset): sent by Supabase Auth itself, nothing in this file.
 //  2. Transactional emails (booking confirmation + PDF ticket): sent by the `send-email` Edge Function in supabase/functions.
-// Supabase has no generic "send any email" API, so that function delivers through Resend using a key kept as a Supabase secret.
+// Supabase has no generic "send any email" API, so that function delivers through your own SMTP server (port 465) or Resend, using credentials kept as Supabase secrets.
 // The Next.js app never holds mail credentials. We never pretend a mail went out: failures come back as { ok: false }.
 export type MailAttachment = { filename: string; content: Buffer; contentType?: string };
 
 export const emailConfigured = () => !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 export const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-export async function sendMail(m: { to: string; subject: string; text: string; html: string; attachments?: MailAttachment[] }) {
+export async function sendMail(m: { to: string | string[]; subject: string; text: string; html: string; attachments?: MailAttachment[] }) {
   if (!emailConfigured()) return { ok: false as const, error: "not_configured" };
   const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL!.replace(/\/$/, "")}/functions/v1/send-email`;
   try {
