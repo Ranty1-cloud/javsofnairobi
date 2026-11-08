@@ -14,7 +14,7 @@ Canonical site: **https://javsofnairobi.co.ke** (no `www`). Nobody can promise r
 | Manifest and icons | `public/site.webmanifest`, `public/icons/` | Installable-app metadata and the logo as PNG (192, 512, maskable). |
 | Share image | `public/og-image.jpg` (1200×630) | Default Open Graph / X image. Trips keep their own generated card (`trips/[slug]/opengraph-image.tsx`). |
 | security.txt | `public/.well-known/security.txt` | Points reporters at the Support page. Renew the `Expires` line each year. |
-| Headers and redirects | `next.config.mjs` | www → apex permanent redirect, `X-Robots-Tag: noindex` on private areas, basic security headers. |
+| Headers | `next.config.mjs` | `X-Robots-Tag: noindex` on private areas, basic security headers. The app does not redirect www/apex itself: that is done once, in Vercel's domain settings. |
 | Answer content | `/how-to-book`, `/support`, `/about`, `/privacy` | Written from how the site really works. FAQ data appears only on pages that show those questions. |
 
 Filtered or searched views (`/trips?type=…`, `/news?q=…`, `/gallery?c=…`, `/shop?brand=…`) canonicalise to the base page and carry `noindex, follow` so they do not compete with it.
@@ -31,7 +31,7 @@ Set in Vercel → Project → Settings → Environment Variables. Never invent a
 
 ## One-time setup after deploy
 
-1. **Domain**: in Vercel → Domains, make `javsofnairobi.co.ke` the primary domain and `www.javsofnairobi.co.ke` redirect to it (308/301). The app also redirects www → apex as a safety net.
+1. **Domain**: in Vercel → Domains, pick ONE primary domain and let the other redirect to it (Vercel does this for you). Then set `NEXT_PUBLIC_SITE_URL` to that exact primary address (with or without `www`, matching what loads in the browser). The sitemap, canonicals and structured data all use it, and the sitemap you submit must be on that same host.
 2. **Check the files** (each should return 200):
    `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/llms-full.txt`, `/site.webmanifest`, `/.well-known/security.txt`, `/og-image.jpg`.
 3. **Google Search Console** (search.google.com/search-console): Add property → *Domain* → add the DNS TXT record at your domain registrar. Then Sitemaps → submit `sitemap.xml`.
